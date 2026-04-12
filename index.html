@@ -876,7 +876,7 @@ tr{cursor:pointer}
 /* ═══════════════════════════════════════════════════════════
    CONFIG — Replace this URL with your deployed GAS URL
    ═══════════════════════════════════════════════════════════ */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzrNuE4aDZTqW6fCjBrIrWyB9EiwyE6dJP13xXv7pTDBjL-ykxuqi-GXIa7ipn7UBYXrg/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwgDSWKoCDOk-YpY3UOIOXlDzM9AFGkEVXCsEbEl6PsN8VXpm7gqCkDwN-DSe1YU7toVA/exec';
 
 /* ═══ STATE ═══ */
 let DATA = null;
@@ -1108,10 +1108,6 @@ function renderAgent(name, email) {
       </div>
       <div class="hero-status"><span class="pill ${stCls}"><span class="pill-dot"></span>${ag.curWeekStatus||'No data'}</span></div>
     </div>
-    <div class="prog-row">
-      <div class="prog-label"><span>Cycle progress</span><span class="prog-val">Day ${cycleDay} / ${cycleTotal} — ${cyclePct}%</span></div>
-      <div class="prog-track"><div class="prog-fill accent" style="width:${cyclePct}%"></div></div>
-    </div>
     <div class="prog-row" style="margin-bottom:0">
       <div class="prog-label"><span>Conv% vs target</span><span class="prog-val">${pct(conv)} / ${pct(tgt)}</span></div>
       <div class="prog-track"><div class="prog-fill ${convFillCls}" style="width:${convW}%"></div></div>
@@ -1197,35 +1193,71 @@ function renderAdmin() {
 }
 
 function renderOverview() {
-  const agents     = DATA.agents || [];
-  const totalDOs   = agents.reduce((s,a) => s + a.dosConv, 0);
-  const totalLeads = agents.reduce((s,a) => s + a.leads, 0);
-  const withConv   = agents.filter(a => a.overallConv != null);
-  const avgConv    = withConv.length ? withConv.reduce((s,a) => s + a.overallConv, 0) / withConv.length : null;
-  const cycleDay   = DATA.cycleDay || 1;
-  const cycleTotal = DATA.cycleDayTotal || 22;
-  const cyclePct   = Math.round((cycleDay/cycleTotal)*100);
+  const agents    = DATA.agents || [];
+  // DOs from agents array (tracked agents)
+  const totalDOs  = agents.reduce((s,a) => s + a.dosConv, 0);
+  // Grand total DOs from E_Ps sheet (h2 column) — passed from GAS as DATA.totalDOsSheet
+  const grandDOs  = DATA.totalDOsSheet != null ? DATA.totalDOsSheet : totalDOs;
+  const withConv  = agents.filter(a => a.overallConv != null);
+  const avgConv   = withConv.length ? withConv.reduce((s,a) => s + a.overallConv, 0) / withConv.length : null;
+  const onTrack   = agents.filter(a => a.curWeekStatus === 'ON TRACK').length;
 
   document.getElementById('tab-0').innerHTML = `
   <div class="kpi-grid">
-    <div class="kpi anim"><div class="kpi-val" style="color:var(--blue)">${agents.length}</div><div class="kpi-label">Agents</div></div>
-    <div class="kpi anim anim-d1"><div class="kpi-val" style="color:var(--green)">${totalDOs}</div><div class="kpi-label">Total DOs</div></div>
-    <div class="kpi anim anim-d2"><div class="kpi-val" style="color:var(--accent2)">${avgConv!=null?pct(avgConv):'—'}</div><div class="kpi-label">Avg Conv%</div></div>
-    <div class="kpi anim anim-d3"><div class="kpi-val" style="color:var(--yellow)">${totalLeads}</div><div class="kpi-label">Leads</div></div>
-  </div>
-  <div class="cycle-bar anim anim-d4">
-    <div class="cycle-bar-top">
-      <span>Cycle progress</span>
-      <span class="cycle-bar-val">Day ${cycleDay} / ${cycleTotal} — ${cyclePct}%</span>
+    <div class="kpi anim">
+      <div class="kpi-val" style="color:var(--blue)">${agents.length}</div>
+      <div class="kpi-label">Agents</div>
     </div>
-    <div class="prog-track"><div class="prog-fill accent" style="width:${cyclePct}%"></div></div>
+    <div class="kpi anim anim-d1">
+      <div class="kpi-val" style="color:var(--green)">${grandDOs}</div>
+      <div class="kpi-label">Total DOs</div>
+      ${grandDOs !== totalDOs ? `<div style="font-size:10px;color:var(--dim);margin-top:3px;font-family:var(--mono)">${totalDOs} tracked</div>` : ''}
+    </div>
+    <div class="kpi anim anim-d2">
+      <div class="kpi-val" style="color:var(--accent2)">${avgConv!=null?pct(avgConv):'—'}</div>
+      <div class="kpi-label">Avg Conv%</div>
+    </div>
+    <div class="kpi anim anim-d3">
+      <div class="kpi-val" style="color:var(--yellow)">${onTrack}</div>
+      <div class="kpi-label">On Track</div>
+    </div>
   </div>
   <div class="two-charts">
     <div class="chart-card anim"><h4>Status Distribution</h4><canvas id="c-status"></canvas></div>
     <div class="chart-card anim anim-d1"><h4>By Category</h4><canvas id="c-cat"></canvas></div>
   </div>
-  <div class="chart-card anim"><h4>Top 10 — Conv%</h4><canvas id="c-top" style="max-height:260px"></canvas></div>
+  <div class="chart-card anim"><h4>Top 10 — Conv%</h4><canvas id="c-top" style="max-height:280px"></canvas></div>
   <div class="chart-card anim"><h4>DO Sources</h4><canvas id="c-src"></canvas></div>`;
+
+  // Shared datalabels plugin (inline, no CDN needed)
+  const dataLabelPlugin = {
+    id: 'customLabels',
+    afterDatasetsDraw(chart) {
+      const ctx = chart.ctx;
+      chart.data.datasets.forEach((dataset, i) => {
+        const meta = chart.getDatasetMeta(i);
+        if (meta.hidden) return;
+        meta.data.forEach((bar, idx) => {
+          const val = dataset.data[idx];
+          if (!val && val !== 0) return;
+          const {x, y} = bar.tooltipPosition();
+          ctx.save();
+          ctx.font = `600 11px "JetBrains Mono", monospace`;
+          ctx.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = chart.options.indexAxis === 'y' ? 'middle' : 'bottom';
+          const label = dataset.label === 'Conv%' ? val + '%' : val;
+          if (chart.options.indexAxis === 'y') {
+            ctx.textAlign = 'left';
+            ctx.fillText(label, x + 6, y);
+          } else {
+            ctx.fillText(label, x, y - 5);
+          }
+          ctx.restore();
+        });
+      });
+    }
+  };
 
   setTimeout(() => {
     const onT  = agents.filter(a => a.curWeekStatus === 'ON TRACK').length;
@@ -1233,52 +1265,117 @@ function renderOverview() {
     const offT = agents.filter(a => a.curWeekStatus === 'OFF TRACK').length;
     const noD  = agents.filter(a => !['ON TRACK','WATCH','OFF TRACK'].includes(a.curWeekStatus)).length;
 
+    // ── Status doughnut — with center total label ──
     destroyChart('status');
-    CHARTS.status = new Chart(document.getElementById('c-status'), {
+    const statusCanvas = document.getElementById('c-status');
+    const centerPlugin = {
+      id: 'centerText',
+      beforeDraw(chart) {
+        const {ctx, chartArea:{width,height,left,top}} = chart;
+        ctx.save();
+        const cx = left + width/2, cy = top + height/2;
+        ctx.font = `800 28px "Syne", sans-serif`;
+        ctx.fillStyle = '#f0f0f8';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(onT+wtch+offT+noD, cx, cy - 8);
+        ctx.font = `500 11px "DM Sans", sans-serif`;
+        ctx.fillStyle = 'rgba(152,152,184,0.8)';
+        ctx.fillText('agents', cx, cy + 14);
+        ctx.restore();
+      }
+    };
+    CHARTS.status = new Chart(statusCanvas, {
       type: 'doughnut',
+      plugins: [centerPlugin],
       data: {
         labels: ['On Track','Watch','Off Track','No Data'],
-        datasets: [{ data: [onT,wtch,offT,noD], backgroundColor: ['rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(244,63,94,.8)','rgba(90,90,122,.4)'], borderWidth:0, hoverOffset:4 }]
+        datasets: [{ data: [onT,wtch,offT,noD], backgroundColor: ['rgba(16,185,129,.85)','rgba(245,158,11,.85)','rgba(244,63,94,.85)','rgba(90,90,122,.4)'], borderWidth:0, hoverOffset:5 }]
       },
-      options: { responsive:true, cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ color:'rgba(255,255,255,.5)', boxWidth:8, font:{size:10}, padding:10 } } } }
+      options: {
+        responsive:true, cutout:'62%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ color:'rgba(255,255,255,.55)', boxWidth:8, font:{size:10}, padding:12,
+            generateLabels: chart => chart.data.labels.map((l,i) => ({
+              text: `${l}  ${chart.data.datasets[0].data[i]}`,
+              fillStyle: chart.data.datasets[0].backgroundColor[i],
+              hidden: false, index: i
+            }))
+          }}
+        }
+      }
     });
 
+    // ── By Category bar with data labels ──
     const cats = ['SR','OG','JR'];
+    const catDOs   = cats.map(c => agents.filter(a=>a.category===c).reduce((s,a)=>s+a.dosConv,0));
+    const catAgCnt = cats.map(c => agents.filter(a=>a.category===c).length);
     destroyChart('cat');
     CHARTS.cat = new Chart(document.getElementById('c-cat'), {
       type: 'bar',
+      plugins: [dataLabelPlugin],
       data: {
-        labels: cats,
+        labels: cats.map((c,i) => `${c} (${catAgCnt[i]})`),
         datasets: [
-          { label:'DOs', data: cats.map(c=>agents.filter(a=>a.category===c).reduce((s,a)=>s+a.dosConv,0)), backgroundColor: ['rgba(124,58,237,.75)','rgba(16,185,129,.75)','rgba(245,158,11,.75)'], borderRadius:6, borderSkipped:false },
-          { label:'Leads', data: cats.map(c=>agents.filter(a=>a.category===c).reduce((s,a)=>s+a.leads,0)), backgroundColor: ['rgba(124,58,237,.2)','rgba(16,185,129,.2)','rgba(245,158,11,.2)'], borderRadius:6, borderSkipped:false }
+          { label:'DOs', data: catDOs, backgroundColor: ['rgba(124,58,237,.8)','rgba(16,185,129,.8)','rgba(245,158,11,.8)'], borderRadius:7, borderSkipped:false }
         ]
       },
-      options: { responsive:true, plugins:{ legend:{ labels:{ color:'rgba(255,255,255,.45)', boxWidth:8, font:{size:10} } } }, scales:{ x:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.4)'} }, y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'rgba(255,255,255,.4)'} } } }
+      options: {
+        responsive:true,
+        plugins:{ legend:{display:false} },
+        scales:{
+          x:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.55)', font:{size:12, weight:'600'}} },
+          y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'rgba(255,255,255,.4)'}, beginAtZero:true }
+        }
+      }
     });
 
+    // ── Top 10 Conv% horizontal bar with data labels ──
     const top10 = [...agents].filter(a => a.overallConv != null).sort((a,b) => b.overallConv - a.overallConv).slice(0,10);
     destroyChart('top');
     CHARTS.top = new Chart(document.getElementById('c-top'), {
       type: 'bar',
+      plugins: [dataLabelPlugin],
       data: {
         labels: top10.map(a => a.name.split(' ')[0]),
-        datasets: [{ label:'Conv%', data: top10.map(a => +(a.overallConv*100).toFixed(1)), backgroundColor: top10.map(a => a.overallConv>=a.target?'rgba(16,185,129,.75)':'rgba(244,63,94,.65)'), borderRadius:5, borderSkipped:false }]
+        datasets: [{
+          label: 'Conv%',
+          data: top10.map(a => +(a.overallConv*100).toFixed(1)),
+          backgroundColor: top10.map(a => a.overallConv>=a.target?'rgba(16,185,129,.8)':'rgba(244,63,94,.7)'),
+          borderRadius:5, borderSkipped:false
+        }]
       },
-      options: { indexAxis:'y', responsive:true, plugins:{ legend:{display:false} }, scales:{ x:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'rgba(255,255,255,.4)', callback:v=>v+'%'} }, y:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.65)', font:{size:11}} } } }
+      options: {
+        indexAxis:'y', responsive:true,
+        plugins:{ legend:{display:false} },
+        layout:{ padding:{ right: 50 } },
+        scales:{
+          x:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'rgba(255,255,255,.4)', callback:v=>v+'%'}, max: Math.max(...top10.map(a=>+(a.overallConv*100).toFixed(1)))*1.25 },
+          y:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.7)', font:{size:12}} }
+        }
+      }
     });
 
+    // ── Sources bar with data labels ──
     const srcMap = {};
     agents.forEach(a => Object.entries(a.sources||{}).forEach(([k,v]) => { srcMap[k]=(srcMap[k]||0)+v; }));
     const srcKeys = Object.keys(srcMap).sort((a,b) => srcMap[b]-srcMap[a]).slice(0,8);
     destroyChart('src');
     CHARTS.src = new Chart(document.getElementById('c-src'), {
       type: 'bar',
+      plugins: [dataLabelPlugin],
       data: {
         labels: srcKeys,
-        datasets: [{ label:'DOs', data: srcKeys.map(k=>srcMap[k]), backgroundColor: 'rgba(124,58,237,.65)', borderRadius:5, borderSkipped:false }]
+        datasets: [{ label:'DOs', data: srcKeys.map(k=>srcMap[k]), backgroundColor: srcKeys.map((_,i)=>`hsla(${260+i*22},65%,60%,.75)`), borderRadius:5, borderSkipped:false }]
       },
-      options: { responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}}}, y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)'}} } }
+      options: {
+        responsive:true,
+        plugins:{ legend:{display:false} },
+        scales:{
+          x:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.45)', font:{size:10}} },
+          y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'rgba(255,255,255,.4)'}, beginAtZero:true }
+        }
+      }
     });
   }, 80);
 }
