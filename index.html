@@ -699,7 +699,7 @@ tbody tr:last-child td{border-bottom:none}
 }
 .ring-center-label{
   text-anchor:middle;dominant-baseline:central;
-  font-family:'Cinzel',serif;font-size:15px;font-weight:700;
+  font-family:'Cinzel',serif;font-size:18px;font-weight:700;
   transform:rotate(90deg);transform-box:fill-box;
 }
 .ring-center-sub{
@@ -827,8 +827,8 @@ tbody tr:last-child td{border-bottom:none}
         <circle cx="70" cy="67" r="1" fill="#0fc4b5" opacity=".7"/>
       </svg>
     </div>
-    <div class="login-title">ICO Chasing Portal</div>
-    <div class="login-sub"></div>
+    <div class="login-title">ICO<span style="display:block;font-size:1.1rem;letter-spacing:.18em;margin-top:2px">Chasing Portal</span></div>
+    <div class="login-sub">Liberty Medical · Recovery System</div>
 
     <div class="field">
       <label>Username</label>
@@ -980,13 +980,12 @@ tbody tr:last-child td{border-bottom:none}
       <div class="charts-row" id="agentCharts">
         <div class="chart-card">
           <div class="card-title">⬡ Cycle Progress</div>
-          <div style="display:flex;justify-content:center;align-items:center">
-            <svg width="170" height="170" viewBox="0 0 180 180" class="progress-ring">
-              <circle class="ring-bg" cx="90" cy="90" r="72"/>
-              <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="72"
-                stroke="#C9A227" stroke-dasharray="452.4" stroke-dashoffset="452.4"/>
-              <text class="ring-center-label" x="90" y="84" fill="#C9A227" id="ringPct">0%</text>
-              <text class="ring-center-sub" x="90" y="102" fill="#7a8499" id="ringSubText">achieved</text>
+          <div style="display:flex;justify-content:center;align-items:center;padding:8px 0">
+            <svg width="200" height="200" viewBox="0 0 200 200" class="progress-ring">
+              <circle class="ring-bg" cx="100" cy="100" r="84"/>
+              <circle class="ring-fill" id="ringFill" cx="100" cy="100" r="84"
+                stroke="#C9A227" stroke-dasharray="527.8" stroke-dashoffset="527.8"/>
+              <text class="ring-center-label" x="100" y="100" fill="#C9A227" id="ringPct">0%</text>
             </svg>
           </div>
         </div>
@@ -1019,7 +1018,7 @@ tbody tr:last-child td{border-bottom:none}
 // ============================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbyqBzgeOpsX-m9vWuIyChrIqgi_BJROBzTokXf67LQmIqsoHgWU7AmiveSIFGTzEeRA/exec";
 const SYNC_INTERVAL   = 60000; // 1 minute
-const PAGE_ROTATE_MS  = 30000; // 30 seconds per page
+const PAGE_ROTATE_MS  = 50000; // 50 seconds per page
 const BROADCAST_DELAY = 10000;
 
 // ============================================================
@@ -1336,13 +1335,9 @@ function renderCatDOsChart(catData) {
     options: chartOpts()
   });
 
-  // Inline numbers below bars
+  // Clear labels div — numbers show on hover via tooltip only
   const labelsEl = document.getElementById('catDOsLabels');
-  if (labelsEl) {
-    labelsEl.innerHTML = labels.map((l,i) =>
-      `<div class="bar-label-item"><span class="bar-label-val" style="color:${bords[i]||'var(--gold)'}">${vals[i]}</span><span class="bar-label-name">${l}</span></div>`
-    ).join('');
-  }
+  if (labelsEl) labelsEl.innerHTML = '';
 }
 
 function renderSourceChart(agents) {
@@ -1431,13 +1426,29 @@ function renderCatBreakdown(catData) {
   let html = '<table><thead><tr><th>Category</th>';
   keys.forEach(k => { html += `<th>${k}</th>`; });
   html += '</tr></thead><tbody>';
-  catData.forEach(row => {
+
+  // Separate category rows from the Total row
+  const catRows   = catData.filter(r => String(r['Category']||'').toUpperCase() !== 'TOTAL');
+  const totalRow  = catData.find(r => String(r['Category']||'').toUpperCase() === 'TOTAL');
+
+  catRows.forEach(row => {
     html += `<tr><td><span class="cat-tag ${row['Category']}">${row['Category']}</span></td>`;
     keys.forEach(k => {
       html += `<td class="${k==='Total DOs'?'total-cell':''}">${row[k]??''}</td>`;
     });
     html += '</tr>';
   });
+
+  // Total row — always last, styled distinctly
+  if (totalRow) {
+    html += `<tr style="border-top:1px solid var(--border);background:rgba(201,162,39,0.04)">
+      <td style="font-family:var(--font-display);font-size:.75rem;font-weight:700;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase">Total</td>`;
+    keys.forEach(k => {
+      html += `<td class="total-cell">${totalRow[k]??''}</td>`;
+    });
+    html += '</tr>';
+  }
+
   html += '</tbody></table>';
   wrap.innerHTML = html;
 }
@@ -1624,16 +1635,14 @@ function renderAgent(data) {
     </div>
   `;
 
-  // Progress ring
-  const circ   = 2 * Math.PI * 72;
+  // Progress ring (r=84, circ=527.8)
+  const circ   = 2 * Math.PI * 84;
   const offset = circ * (1 - pct / 100);
   setTimeout(() => {
     const ring  = document.getElementById('ringFill');
     const label = document.getElementById('ringPct');
-    const sub   = document.getElementById('ringSubText');
     if (ring)  ring.style.strokeDashoffset = offset;
     if (label) label.textContent = pct.toFixed(0) + '%';
-    if (sub)   sub.textContent   = 'achieved';
   }, 120);
 
   renderAgentWeekChart(me);
