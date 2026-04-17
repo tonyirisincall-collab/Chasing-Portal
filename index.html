@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Liberty Medical — Chasing Recovery</title>
+<title>ICO Chasing Portal</title>
 
-<!-- Favicon: Eye of Horus SVG inline via data URI -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23C9A227' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='32' cy='28' rx='14' ry='9' stroke='%23C9A227' fill='%230a0e1a'/%3E%3Ccircle cx='32' cy='28' r='5' fill='%23C9A227' stroke='none'/%3E%3Ccircle cx='32' cy='28' r='2.5' fill='%230a0e1a' stroke='none'/%3E%3Cline x1='46' y1='28' x2='54' y2='22'/%3E%3Cline x1='54' y1='22' x2='54' y2='30'/%3E%3Cline x1='54' y1='30' x2='46' y2='34'/%3E%3Cline x1='32' y1='37' x2='29' y2='44'/%3E%3Cline x1='29' y1='44' x2='35' y2='48'/%3E%3Cline x1='35' y1='48' x2='36' y2='44'/%3E%3C/g%3E%3C/svg%3E"/>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -27,7 +26,6 @@
   --green:       #4ecb8d;
   --purple:      #9b7fe8;
 
-  /* Dark theme */
   --bg:          #070b14;
   --bg-card:     #0d1322;
   --bg-card2:    #111928;
@@ -40,9 +38,9 @@
   --font-display: 'Cinzel', serif;
   --font-body:    'DM Sans', sans-serif;
 
-  --radius:  12px;
+  --radius:    12px;
   --radius-sm: 7px;
-  --shadow:  0 4px 32px rgba(0,0,0,0.5);
+  --shadow:    0 4px 32px rgba(0,0,0,0.5);
   --shadow-gold: 0 0 24px rgba(201,162,39,0.15);
 }
 
@@ -55,7 +53,7 @@
   --text:        #1a1410;
   --text-dim:    #5a4e3a;
   --text-muted:  #9a8e7a;
-  --shadow:  0 4px 32px rgba(0,0,0,0.12);
+  --shadow:      0 4px 32px rgba(0,0,0,0.12);
 }
 
 /* ======================================================
@@ -73,7 +71,6 @@ body{
   position:relative;
 }
 
-/* Grid noise background */
 body::before{
   content:'';
   position:fixed;inset:0;
@@ -95,8 +92,11 @@ body::before{
 @keyframes spin     { to{transform:rotate(360deg)} }
 @keyframes glow     { 0%,100%{box-shadow:0 0 8px rgba(201,162,39,0.2)} 50%{box-shadow:0 0 28px rgba(201,162,39,0.6)} }
 @keyframes slideIn  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideDown{ from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
 @keyframes countUp  { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
 @keyframes horus-eye{ 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(.08)} }
+@keyframes pageSwap { 0%{opacity:1;transform:translateY(0)} 45%{opacity:0;transform:translateY(-12px)} 55%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+@keyframes overlayIn{ from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
 
 /* ======================================================
    SCROLLBAR
@@ -142,7 +142,6 @@ body::before{
   pointer-events:none;
 }
 
-/* Eye of Horus logo */
 .horus-logo{
   display:flex;justify-content:center;margin-bottom:28px;
 }
@@ -234,9 +233,9 @@ body::before{
 }
 .topbar-logo svg{width:36px;height:36px}
 .topbar-brand{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:.06em}
-.topbar-brand span{color:var(--text-dim);font-size:.75rem;font-weight:400;display:block;letter-spacing:.1em}
+.topbar-brand span{color:var(--text-muted);font-size:.68rem;font-weight:400;display:block;letter-spacing:.14em;text-transform:uppercase}
 
-.topbar-right{display:flex;align-items:center;gap:16px}
+.topbar-right{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
 
 .chip{
   display:inline-flex;align-items:center;gap:6px;
@@ -245,6 +244,7 @@ body::before{
   border:1px solid var(--border-soft);
   background:var(--bg-card2);
   color:var(--text-dim);
+  white-space:nowrap;
 }
 .chip.admin{border-color:var(--gold-dim);color:var(--gold)}
 .chip.agent{border-color:var(--teal-dim);color:var(--teal)}
@@ -256,7 +256,7 @@ body::before{
   color:var(--text-dim);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   transition:border-color .2s,color .2s,transform .15s;
-  font-size:16px;
+  font-size:16px;flex-shrink:0;
 }
 .btn-icon:hover{border-color:var(--gold);color:var(--gold);transform:scale(1.08)}
 
@@ -264,11 +264,47 @@ body::before{
   width:8px;height:8px;border-radius:50%;
   background:var(--green);
   animation:pulse 2s infinite;
-  margin-right:4px;
+  flex-shrink:0;
 }
 .sync-dot.syncing{background:var(--gold);animation:spin 1s linear infinite;border-radius:0;
   clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);}
 .sync-dot.error{background:var(--red);animation:none}
+
+/* ======================================================
+   PAGE TABS (admin only)
+====================================================== */
+.page-tabs{
+  display:none;
+  align-items:center;gap:0;
+  padding:0 28px;
+  background:var(--bg-card);
+  border-bottom:1px solid var(--border-soft);
+  position:sticky;top:64px;z-index:99;
+}
+.page-tabs.show{display:flex}
+.page-tab{
+  padding:12px 20px;
+  font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-muted);cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:color .2s,border-color .2s;
+  font-family:var(--font-display);
+  user-select:none;
+  white-space:nowrap;
+}
+.page-tab:hover{color:var(--text-dim)}
+.page-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* Auto-rotate indicator */
+.auto-indicator{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  font-size:.72rem;color:var(--text-muted);padding:0 4px;
+}
+.auto-bar-bg{width:60px;height:3px;background:var(--bg-card2);border-radius:99px;overflow:hidden}
+.auto-bar-fill{
+  height:100%;background:var(--gold-dim);border-radius:99px;
+  transition:width .1s linear;
+}
 
 /* ======================================================
    BROADCAST BANNER
@@ -279,7 +315,7 @@ body::before{
   padding:10px 28px;
   background:linear-gradient(90deg,rgba(201,162,39,0.08),rgba(201,162,39,0.04));
   border-bottom:1px solid rgba(201,162,39,0.2);
-  animation:slideIn .5s ease;
+  animation:slideDown .5s ease;
 }
 .broadcast-banner.show{display:flex}
 .broadcast-icon{color:var(--gold);font-size:18px;flex-shrink:0}
@@ -304,6 +340,10 @@ body::before{
   display:flex;align-items:center;gap:10px;
 }
 .section-title::after{content:'';flex:1;height:1px;background:var(--border-soft)}
+
+/* Page panels */
+.admin-page{display:none;animation:fadeUp .4s ease both}
+.admin-page.active{display:block}
 
 /* ======================================================
    KPI CARDS ROW
@@ -380,9 +420,9 @@ body::before{
 }
 
 /* ======================================================
-   AGENT TABLE
+   AGENT TABLE — compact columns
 ====================================================== */
-.table-wrap{overflow-x:auto}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 thead tr th{
   font-family:var(--font-display);
@@ -391,8 +431,8 @@ thead tr th{
   padding:10px 12px;border-bottom:1px solid var(--border);
   white-space:nowrap;text-align:left;
 }
-tbody tr{transition:background .15s}
-tbody tr:hover{background:rgba(201,162,39,0.04)}
+tbody tr{transition:background .15s;cursor:pointer}
+tbody tr:hover{background:rgba(201,162,39,0.06)}
 tbody tr td{
   padding:11px 12px;
   border-bottom:1px solid var(--border-soft);
@@ -431,7 +471,65 @@ tbody tr:last-child td{border-bottom:none}
 .conv-bar-wrap{display:flex;align-items:center;gap:8px;min-width:110px}
 .conv-bar-bg{flex:1;height:5px;background:var(--bg);border-radius:99px;overflow:hidden}
 .conv-bar-fill{height:100%;border-radius:99px;transition:width .6s ease;background:linear-gradient(90deg,var(--teal),var(--gold))}
-.conv-pct{font-size:.72rem;color:var(--text-dim);min-width:36px;text-align:right}
+.conv-pct{font-size:.72rem;color:var(--text-dim);min-width:40px;text-align:right}
+
+/* ======================================================
+   AGENT DETAIL OVERLAY
+====================================================== */
+.overlay-backdrop{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(4,7,16,0.75);
+  backdrop-filter:blur(6px);
+  z-index:500;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.overlay-backdrop.show{display:flex}
+.overlay-panel{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  max-width:640px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  position:relative;
+  animation:overlayIn .3s ease both;
+  box-shadow:var(--shadow),var(--shadow-gold);
+}
+.overlay-close{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--border-soft);
+  background:var(--bg-card2);
+  color:var(--text-dim);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:18px;line-height:1;
+  transition:border-color .2s,color .2s,transform .15s;
+}
+.overlay-close:hover{border-color:var(--red);color:var(--red);transform:rotate(90deg)}
+.overlay-agent-name{
+  font-family:var(--font-display);
+  font-size:1.4rem;font-weight:700;color:var(--gold);
+  margin-bottom:6px;
+}
+.overlay-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.overlay-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;margin-bottom:20px;
+}
+.o-stat{
+  background:var(--bg);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:14px;text-align:center;
+}
+.o-stat-val{
+  font-family:var(--font-display);font-size:1.3rem;font-weight:700;
+  color:var(--gold);display:block;margin-bottom:4px;
+}
+.o-stat-lbl{font-size:.7rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.overlay-src{margin-top:16px}
+.overlay-src-title{font-size:.72rem;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
 
 /* ======================================================
    LEADERBOARD (AGENT VIEW)
@@ -465,7 +563,7 @@ tbody tr:last-child td{border-bottom:none}
 }
 
 /* ======================================================
-   CHARTS ROW
+   CHARTS ROW — with inline numbers
 ====================================================== */
 .charts-row{
   display:grid;
@@ -480,7 +578,32 @@ tbody tr:last-child td{border-bottom:none}
   padding:24px;
   animation:fadeUp .6s ease both;
 }
-.chart-wrap{position:relative;height:220px}
+.chart-wrap{position:relative;height:200px}
+
+/* Chart legend with numbers */
+.chart-legend{
+  display:flex;flex-direction:column;gap:6px;
+  margin-top:14px;
+}
+.chart-legend-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:.75rem;
+}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-label{flex:1;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-val{font-family:var(--font-display);font-size:.78rem;font-weight:700;color:var(--text);min-width:28px;text-align:right}
+
+/* Bar chart inline numbers */
+.bar-chart-wrap{position:relative;height:200px}
+.bar-chart-labels{
+  display:flex;justify-content:space-around;
+  margin-top:6px;
+}
+.bar-label-item{
+  text-align:center;font-size:.7rem;
+}
+.bar-label-val{font-family:var(--font-display);font-weight:700;color:var(--gold);display:block;font-size:.85rem}
+.bar-label-name{color:var(--text-muted)}
 
 /* ======================================================
    CATEGORY BREAKDOWN TABLE
@@ -563,16 +686,6 @@ tbody tr:last-child td{border-bottom:none}
 .source-pill b{color:var(--text);font-weight:600}
 
 /* ======================================================
-   LOADING SKELETON
-====================================================== */
-.skeleton{
-  background:linear-gradient(90deg,var(--bg-card2) 25%,var(--bg-card) 50%,var(--bg-card2) 75%);
-  background-size:200% 100%;
-  animation:shimmer 1.5s infinite;
-  border-radius:var(--radius-sm);
-}
-
-/* ======================================================
    PROGRESS RING
 ====================================================== */
 .progress-ring-wrap{
@@ -584,39 +697,17 @@ tbody tr:last-child td{border-bottom:none}
   fill:none;stroke-width:8;stroke-linecap:round;
   transition:stroke-dashoffset .8s ease;
 }
-.ring-label{
+.ring-center-label{
   text-anchor:middle;dominant-baseline:central;
-  font-family:'Cinzel',serif;font-size:14px;font-weight:700;
+  font-family:'Cinzel',serif;font-size:15px;font-weight:700;
   transform:rotate(90deg);transform-box:fill-box;
 }
-
-/* ======================================================
-   WEEK STATUS BAR
-====================================================== */
-.week-bar-row{display:flex;flex-direction:column;gap:12px}
-.week-bar-item{}
-.week-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.week-bar-name{font-size:.8rem;font-weight:500;color:var(--text)}
-.week-bar-vals{font-size:.75rem;color:var(--text-dim)}
-.week-bar-bg{height:8px;background:var(--bg);border-radius:99px;overflow:hidden}
-.week-bar-fill{
-  height:100%;border-radius:99px;
-  transition:width .7s ease;
+.ring-center-sub{
+  text-anchor:middle;
+  font-size:9.5px;font-family:'DM Sans',sans-serif;
+  transform:rotate(90deg);transform-box:fill-box;
+  letter-spacing:.06em;text-transform:uppercase;
 }
-
-/* ======================================================
-   TOOLTIP
-====================================================== */
-.tooltip-wrap{position:relative;display:inline-block}
-.tooltip-wrap .tooltip{
-  position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);
-  background:var(--bg-card2);border:1px solid var(--border);
-  color:var(--text);font-size:.75rem;
-  padding:6px 10px;border-radius:6px;
-  white-space:nowrap;pointer-events:none;
-  opacity:0;transition:opacity .2s;z-index:999;
-}
-.tooltip-wrap:hover .tooltip{opacity:1}
 
 /* ======================================================
    LOADER SPINNER
@@ -656,20 +747,34 @@ tbody tr:last-child td{border-bottom:none}
 /* ======================================================
    THEME TOGGLE
 ====================================================== */
-.theme-icon-dark,
-.theme-icon-light{display:none}
+.theme-icon-dark,.theme-icon-light{display:none}
 [data-theme="light"] .theme-icon-dark{display:inline}
 [data-theme="dark"]  .theme-icon-light{display:inline}
 :not([data-theme]) .theme-icon-light{display:inline}
 
 /* ======================================================
-   RESPONSIVE
+   RESPONSIVE — Mobile
 ====================================================== */
 @media(max-width:700px){
   .dashboard{padding:14px}
-  .topbar{padding:0 14px}
+  .topbar{padding:0 12px;height:56px}
+  .topbar-brand{font-size:.85rem}
+  .topbar-brand span{font-size:.6rem}
   .kpi-row{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:1.6rem}
   .main-grid{grid-template-columns:1fr}
+  .charts-row{grid-template-columns:1fr}
+  .personal-stats{grid-template-columns:1fr 1fr}
+  .page-tabs{padding:0 12px;top:56px}
+  .page-tab{padding:10px 14px;font-size:.72rem}
+  .overlay-panel{padding:20px}
+  .overlay-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:420px){
+  .login-wrap{padding:36px 24px 32px}
+  .kpi-row{grid-template-columns:1fr}
+  .topbar-brand span{display:none}
+  #userChip{display:none}
 }
 </style>
 </head>
@@ -687,11 +792,18 @@ tbody tr:last-child td{border-bottom:none}
   Syncing...
 </div>
 
+<!-- ===================== AGENT DETAIL OVERLAY =========== -->
+<div class="overlay-backdrop" id="agentOverlay" onclick="closeOverlay(event)">
+  <div class="overlay-panel" id="overlayPanel">
+    <button class="overlay-close" onclick="closeOverlayBtn()">✕</button>
+    <div id="overlayContent"></div>
+  </div>
+</div>
+
 <!-- ===================== LOGIN ========================== -->
 <div id="loginScreen" class="screen">
   <div class="login-wrap">
     <div class="horus-logo">
-      <!-- Eye of Horus SVG — detailed & precise -->
       <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <filter id="gf"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -700,35 +812,23 @@ tbody tr:last-child td{border-bottom:none}
             <stop offset="100%" stop-color="#0a0e1a"/>
           </radialGradient>
         </defs>
-        <!-- Outer eye shape -->
         <path d="M20,60 Q60,22 100,60 Q60,98 20,60 Z" fill="#0a0e1a" stroke="#C9A227" stroke-width="2.5" filter="url(#gf)"/>
-        <!-- Iris -->
         <circle cx="60" cy="60" r="18" fill="url(#pupilGrad)" stroke="#C9A227" stroke-width="1.5"/>
-        <!-- Inner iris ring -->
         <circle cx="60" cy="60" r="13" fill="none" stroke="#0fc4b5" stroke-width="1" opacity=".6"/>
-        <!-- Pupil -->
         <circle class="horus-pupil" cx="60" cy="60" r="8" fill="#070b14"/>
-        <!-- Pupil shine -->
         <circle cx="63" cy="57" r="2.5" fill="rgba(255,255,255,0.35)"/>
-        <!-- Upper lid line -->
         <path d="M20,60 Q60,22 100,60" fill="none" stroke="#C9A227" stroke-width="3" stroke-linecap="round"/>
-        <!-- Lower lid line -->
         <path d="M20,60 Q60,90 100,60" fill="none" stroke="#C9A227" stroke-width="1.8" stroke-linecap="round"/>
-        <!-- Tear drop (kohl line down from outer corner) -->
         <path d="M100,60 L113,72 L108,82 L100,72" fill="none" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Inner corner accent -->
         <path d="M20,60 L8,54" fill="none" stroke="#C9A227" stroke-width="1.8" stroke-linecap="round"/>
-        <!-- Eyebrow -->
         <path d="M28,40 Q60,28 96,44" fill="none" stroke="#C9A227" stroke-width="2" stroke-linecap="round" opacity=".6"/>
-        <!-- Bottom spiral marks (decorative kohl) -->
         <path d="M60,78 L55,92 L62,96" fill="none" stroke="#C9A227" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Gold iris sparkles -->
         <circle cx="50" cy="54" r="1.2" fill="#C9A227" opacity=".7"/>
         <circle cx="70" cy="67" r="1" fill="#0fc4b5" opacity=".7"/>
       </svg>
     </div>
-    <div class="login-title">Liberty Medical</div>
-    <div class="login-sub">Chasing Recovery System</div>
+    <div class="login-title">ICO Chasing Portal</div>
+    <div class="login-sub"></div>
 
     <div class="field">
       <label>Username</label>
@@ -756,8 +856,8 @@ tbody tr:last-child td{border-bottom:none}
         <path d="M100,60 L112,70 L108,80 L100,70" fill="none" stroke="#C9A227" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <div class="topbar-brand">
-        Liberty Medical
-        <span>Chasing Recovery</span>
+        ICO Chasing Portal
+        <span>Liberty Medical</span>
       </div>
     </div>
     <div class="topbar-right">
@@ -774,6 +874,16 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- PAGE TABS (admin only) -->
+  <div class="page-tabs" id="pageTabs">
+    <div class="page-tab active" id="tab0" onclick="switchTab(0)">Overview & Analytics</div>
+    <div class="page-tab" id="tab1" onclick="switchTab(1)">All Agents</div>
+    <div class="auto-indicator">
+      <span style="font-size:.7rem">Auto</span>
+      <div class="auto-bar-bg"><div class="auto-bar-fill" id="autoBarFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
   <!-- BROADCAST BANNER -->
   <div class="broadcast-banner" id="broadcastBanner">
     <span class="broadcast-icon">📣</span>
@@ -785,74 +895,73 @@ tbody tr:last-child td{border-bottom:none}
   <div id="adminView" style="display:none">
     <div class="dashboard">
 
-      <!-- KPI ROW -->
-      <p class="section-title">Overview</p>
-      <div class="kpi-row" id="adminKpis">
-        <div class="kpi-card">
-          <div class="kpi-label">Total DOs</div>
-          <div class="kpi-val" id="kpiTotalDOs">—</div>
-          <div class="kpi-sub">All categories combined</div>
+      <!-- PAGE 0: Overview + Analytics + Category Breakdown -->
+      <div class="admin-page active" id="adminPage0">
+
+        <p class="section-title">Overview</p>
+        <div class="kpi-row" id="adminKpis">
+          <div class="kpi-card">
+            <div class="kpi-label">Total DOs</div>
+            <div class="kpi-val" id="kpiTotalDOs">—</div>
+            <div class="kpi-sub">All categories combined</div>
+          </div>
+          <div class="kpi-card teal">
+            <div class="kpi-label">Active Agents</div>
+            <div class="kpi-val teal" id="kpiActiveAgents">—</div>
+            <div class="kpi-sub">Tracked this cycle</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-label">On Track</div>
+            <div class="kpi-val green" id="kpiOnTrack">—</div>
+            <div class="kpi-sub">Meeting weekly targets</div>
+          </div>
         </div>
-        <div class="kpi-card teal">
-          <div class="kpi-label">Active Agents</div>
-          <div class="kpi-val teal" id="kpiActiveAgents">—</div>
-          <div class="kpi-sub">Tracked this cycle</div>
+
+        <p class="section-title">Analytics</p>
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="card-title">⬡ DOs by Category</div>
+            <div class="bar-chart-wrap"><canvas id="chartCatDOs"></canvas></div>
+            <div class="bar-chart-labels" id="catDOsLabels"></div>
+          </div>
+          <div class="chart-card">
+            <div class="card-title">⬡ Source Breakdown</div>
+            <div class="chart-wrap"><canvas id="chartSources"></canvas></div>
+            <div class="chart-legend" id="sourceLegend"></div>
+          </div>
+          <div class="chart-card">
+            <div class="card-title">⬡ Weekly Status Distribution</div>
+            <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+            <div class="chart-legend" id="statusLegend"></div>
+          </div>
         </div>
-        <div class="kpi-card green">
-          <div class="kpi-label">On Track</div>
-          <div class="kpi-val green" id="kpiOnTrack">—</div>
-          <div class="kpi-sub">Meeting weekly targets</div>
+
+        <p class="section-title">Category Breakdown</p>
+        <div class="cat-breakdown">
+          <div class="card-title">⬡ DO Sources by Category</div>
+          <div class="table-wrap" id="catBreakdownWrap"></div>
         </div>
-        <div class="kpi-card red">
-          <div class="kpi-label">Behind</div>
-          <div class="kpi-val red" id="kpiBehind">—</div>
-          <div class="kpi-sub">Needs attention</div>
-        </div>
-        <div class="kpi-card purple">
-          <div class="kpi-label">Avg Conv %</div>
-          <div class="kpi-val purple" id="kpiAvgConv">—</div>
-          <div class="kpi-sub">Cycle conversion rate</div>
-        </div>
+
       </div>
 
-      <!-- CHARTS ROW -->
-      <p class="section-title">Analytics</p>
-      <div class="charts-row">
-        <div class="chart-card">
-          <div class="card-title">⬡ DOs by Category</div>
-          <div class="chart-wrap"><canvas id="chartCatDOs"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="card-title">⬡ Source Breakdown</div>
-          <div class="chart-wrap"><canvas id="chartSources"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="card-title">⬡ Weekly Status Distribution</div>
-          <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
-        </div>
-      </div>
+      <!-- PAGE 1: All Agents -->
+      <div class="admin-page" id="adminPage1">
 
-      <!-- CATEGORY BREAKDOWN -->
-      <p class="section-title">Category Breakdown</p>
-      <div class="cat-breakdown">
-        <div class="card-title">⬡ DO Sources by Category</div>
-        <div class="table-wrap" id="catBreakdownWrap"></div>
-      </div>
-
-      <!-- AGENTS TABLE -->
-      <p class="section-title">All Agents</p>
-      <div class="card" style="padding:0;overflow:hidden">
-        <div style="padding:20px 24px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft)">
-          <div class="card-title" style="margin:0">⬡ Agent Performance</div>
-          <input id="agentSearch" placeholder="Search agent..." style="margin-left:auto;padding:7px 14px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:99px;font-size:.8rem;outline:none;font-family:var(--font-body)" oninput="filterAgents()"/>
-          <select id="catFilter" onchange="filterAgents()" style="padding:7px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:99px;font-size:.8rem;outline:none;font-family:var(--font-body)">
-            <option value="">All Cats</option>
-            <option value="SR">SR</option>
-            <option value="OG">OG</option>
-            <option value="JR">JR</option>
-          </select>
+        <p class="section-title">All Agents</p>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-soft);flex-wrap:wrap">
+            <div class="card-title" style="margin:0;flex-shrink:0">⬡ Agent Performance</div>
+            <input id="agentSearch" placeholder="Search agent…" style="margin-left:auto;padding:7px 14px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:99px;font-size:.8rem;outline:none;font-family:var(--font-body);min-width:0;width:160px" oninput="filterAgents()"/>
+            <select id="catFilter" onchange="filterAgents()" style="padding:7px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:99px;font-size:.8rem;outline:none;font-family:var(--font-body)">
+              <option value="">All Cats</option>
+              <option value="SR">SR</option>
+              <option value="OG">OG</option>
+              <option value="JR">JR</option>
+            </select>
+          </div>
+          <div class="table-wrap" id="agentTableWrap"></div>
         </div>
-        <div class="table-wrap" id="agentTableWrap"></div>
+
       </div>
 
     </div>
@@ -862,39 +971,37 @@ tbody tr:last-child td{border-bottom:none}
   <div id="agentView" style="display:none">
     <div class="dashboard">
 
-      <!-- PERSONAL CARD -->
       <p class="section-title">Your Performance</p>
       <div class="personal-card" id="personalCard"></div>
 
-      <!-- AGENT KPIs -->
       <div class="kpi-row" id="agentKpis"></div>
 
-      <!-- CHARTS ROW -->
       <p class="section-title">Progress Breakdown</p>
       <div class="charts-row" id="agentCharts">
         <div class="chart-card">
           <div class="card-title">⬡ Cycle Progress</div>
-          <div style="display:flex;justify-content:center">
-            <svg width="180" height="180" viewBox="0 0 180 180" class="progress-ring">
+          <div style="display:flex;justify-content:center;align-items:center">
+            <svg width="170" height="170" viewBox="0 0 180 180" class="progress-ring">
               <circle class="ring-bg" cx="90" cy="90" r="72"/>
               <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="72"
                 stroke="#C9A227" stroke-dasharray="452.4" stroke-dashoffset="452.4"/>
-              <text class="ring-label" x="90" y="90" fill="#C9A227" id="ringPct">0%</text>
-              <text x="90" y="108" text-anchor="middle" font-size="11" fill="#7a8499" font-family="DM Sans">achieved</text>
+              <text class="ring-center-label" x="90" y="84" fill="#C9A227" id="ringPct">0%</text>
+              <text class="ring-center-sub" x="90" y="102" fill="#7a8499" id="ringSubText">achieved</text>
             </svg>
           </div>
         </div>
         <div class="chart-card">
           <div class="card-title">⬡ Weekly Target vs Got</div>
-          <div class="chart-wrap"><canvas id="chartAgentWeek"></canvas></div>
+          <div class="bar-chart-wrap"><canvas id="chartAgentWeek"></canvas></div>
+          <div class="bar-chart-labels" id="agentWeekLabels"></div>
         </div>
         <div class="chart-card">
           <div class="card-title">⬡ DO Sources</div>
           <div class="chart-wrap"><canvas id="chartAgentSources"></canvas></div>
+          <div class="chart-legend" id="agentSrcLegend"></div>
         </div>
       </div>
 
-      <!-- LEADERBOARD -->
       <p class="section-title">Top 10 Leaderboard</p>
       <div class="card">
         <div class="card-title">⬡ Where You Stand</div>
@@ -910,9 +1017,10 @@ tbody tr:last-child td{border-bottom:none}
 // ============================================================
 //  CONFIG
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycby9vPTWFRGSGVgXgsweTJAgTteR9r5HOO8iORbYS9Xl5BL5gviZ7gh93CefNLiSQ8n2/exec";
-const SYNC_INTERVAL = 10000; // 10 seconds
-const BROADCAST_DELAY = 10000; // 10 sec delay before showing
+const API_URL = "https://script.google.com/macros/s/AKfycbyqBzgeOpsX-m9vWuIyChrIqgi_BJROBzTokXf67LQmIqsoHgWU7AmiveSIFGTzEeRA/exec";
+const SYNC_INTERVAL   = 60000; // 1 minute
+const PAGE_ROTATE_MS  = 30000; // 30 seconds per page
+const BROADCAST_DELAY = 10000;
 
 // ============================================================
 //  STATE
@@ -926,6 +1034,9 @@ let state = {
   broadcastTimer: null,
   lastBroadcast: null,
   syncTimer: null,
+  rotateTimer: null,
+  rotateBarTimer: null,
+  currentTab: 0,
   charts: {}
 };
 
@@ -933,14 +1044,13 @@ let state = {
 //  INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
-  // Check saved session
   const saved = sessionStorage.getItem('crm_session');
   if (saved) {
     try {
       const s = JSON.parse(saved);
-      state.role = s.role;
+      state.role     = s.role;
       state.username = s.username;
-      state.token = s.token;
+      state.token    = s.token;
       showDash();
       fetchAndRender();
       startSync();
@@ -961,7 +1071,6 @@ function showLogin() {
   hideLoader();
   document.getElementById('loginScreen').classList.add('active');
   document.getElementById('loginUser').focus();
-  // Enter key
   ['loginUser','loginPass'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
       if (e.key === 'Enter') doLogin();
@@ -972,7 +1081,6 @@ function showLogin() {
 function showDash() {
   document.getElementById('loginScreen').classList.remove('active');
   document.getElementById('dashScreen').classList.add('active');
-  // Update chip
   const chip = document.getElementById('userChip');
   chip.className = 'chip ' + state.role;
   chip.textContent = (state.role === 'admin' ? '⬡ ' : '◈ ') + state.username;
@@ -981,12 +1089,15 @@ function showDash() {
 function doLogout() {
   sessionStorage.removeItem('crm_session');
   clearInterval(state.syncTimer);
+  clearInterval(state.rotateTimer);
+  clearInterval(state.rotateBarTimer);
   Object.values(state.charts).forEach(c => { try{c.destroy()}catch(_){} });
-  state = { role:null,username:null,token:null,data:null,rawAgents:[],broadcastTimer:null,lastBroadcast:null,syncTimer:null,charts:{} };
+  state = { role:null,username:null,token:null,data:null,rawAgents:[],broadcastTimer:null,lastBroadcast:null,syncTimer:null,rotateTimer:null,rotateBarTimer:null,currentTab:0,charts:{} };
   document.getElementById('dashScreen').classList.remove('active');
   document.getElementById('adminView').style.display = 'none';
-  document.getElementById('agentView').style.display = 'none';
+  document.getElementById('agentView').style.display  = 'none';
   document.getElementById('broadcastBanner').classList.remove('show');
+  document.getElementById('pageTabs').classList.remove('show');
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   showLogin();
@@ -1000,26 +1111,18 @@ async function doLogin() {
   const pass = document.getElementById('loginPass').value;
   const btn  = document.getElementById('loginBtn');
   const err  = document.getElementById('loginErr');
-
-  if (!user || !pass) {
-    showErr('Please enter username and password.');
-    return;
-  }
+  if (!user || !pass) { showErr('Please enter username and password.'); return; }
   btn.disabled = true;
   btn.textContent = 'Authenticating…';
   err.classList.remove('show');
-
   try {
-    const res = await fetch(`${API_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
+    const res  = await fetch(`${API_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
     const json = await res.json();
-
     if (json.ok) {
       state.role     = json.role;
       state.username = json.username;
       state.token    = json.token;
-      sessionStorage.setItem('crm_session', JSON.stringify({
-        role: state.role, username: state.username, token: state.token
-      }));
+      sessionStorage.setItem('crm_session', JSON.stringify({ role:state.role, username:state.username, token:state.token }));
       showDash();
       await fetchAndRender();
       startSync();
@@ -1029,7 +1132,6 @@ async function doLogin() {
   } catch(e) {
     showErr('Connection failed. Check your network.');
   }
-
   btn.disabled = false;
   btn.textContent = 'Enter Dashboard';
 }
@@ -1046,37 +1148,21 @@ function showErr(msg) {
 async function fetchAndRender(silent = false) {
   if (!silent) setSyncState('syncing');
   showToast();
-
   try {
-    const res = await fetch(
-      `${API_URL}?action=data&user=${encodeURIComponent(state.username)}&token=${encodeURIComponent(state.token)}`
-    );
+    const res  = await fetch(`${API_URL}?action=data&user=${encodeURIComponent(state.username)}&token=${encodeURIComponent(state.token)}`);
     const json = await res.json();
-
-    if (!json.ok) {
-      setSyncState('error');
-      return;
-    }
-
-    state.data = json;
+    if (!json.ok) { setSyncState('error'); return; }
+    state.data      = json;
     state.rawAgents = json.agents || [];
-
     handleBroadcast(json.broadcast);
-
-    if (state.role === 'admin') {
-      renderAdmin(json);
-    } else {
-      renderAgent(json);
-    }
-
+    if (state.role === 'admin') renderAdmin(json);
+    else                        renderAgent(json);
     setSyncState('ok');
     hideLoader();
-
   } catch(e) {
     setSyncState('error');
     hideLoader();
   }
-
   hideToast();
 }
 
@@ -1088,19 +1174,15 @@ function startSync() {
 function setSyncState(s) {
   const dot = document.getElementById('syncDot');
   const txt = document.getElementById('syncTxt');
-  dot.className = 'sync-dot' + (s === 'syncing' ? ' syncing' : s === 'error' ? ' error' : '');
-  txt.textContent = s === 'syncing' ? 'Syncing…' : s === 'error' ? 'Error' : 'Live';
+  dot.className = 'sync-dot' + (s==='syncing'?' syncing':s==='error'?' error':'');
+  txt.textContent = s==='syncing'?'Syncing…':s==='error'?'Error':'Live';
 }
 
-function showToast() {
-  document.getElementById('refreshToast').classList.add('show');
-}
-function hideToast() {
-  setTimeout(() => document.getElementById('refreshToast').classList.remove('show'), 800);
-}
+function showToast() { document.getElementById('refreshToast').classList.add('show'); }
+function hideToast()  { setTimeout(() => document.getElementById('refreshToast').classList.remove('show'), 800); }
 
 // ============================================================
-//  BROADCAST
+//  BROADCAST — show message only, no greeting prefix
 // ============================================================
 function handleBroadcast(msg) {
   const banner = document.getElementById('broadcastBanner');
@@ -1111,11 +1193,10 @@ function handleBroadcast(msg) {
     return;
   }
   const txt = String(msg).trim();
-  if (txt === state.lastBroadcast) return; // no change
-
+  if (txt === state.lastBroadcast) return;
   banner.classList.remove('show');
   clearTimeout(state.broadcastTimer);
-  document.getElementById('broadcastText').textContent = `Hey ${state.username}! ${txt}`;
+  document.getElementById('broadcastText').textContent = txt;
   state.broadcastTimer = setTimeout(() => {
     banner.classList.add('show');
     state.lastBroadcast = txt;
@@ -1126,52 +1207,106 @@ function handleBroadcast(msg) {
 //  THEME
 // ============================================================
 function toggleTheme() {
-  const body = document.body;
-  const cur  = body.getAttribute('data-theme');
-  body.setAttribute('data-theme', cur === 'light' ? 'dark' : 'light');
-  // Redraw charts
+  const cur = document.body.getAttribute('data-theme');
+  document.body.setAttribute('data-theme', cur === 'light' ? 'dark' : 'light');
   setTimeout(() => reRenderCharts(), 50);
+}
+
+// ============================================================
+//  PAGE TABS & AUTO-ROTATE (admin)
+// ============================================================
+function initPageRotation() {
+  clearInterval(state.rotateTimer);
+  clearInterval(state.rotateBarTimer);
+
+  let elapsed = 0;
+  const barFill = document.getElementById('autoBarFill');
+
+  state.rotateBarTimer = setInterval(() => {
+    elapsed += 200;
+    const pct = Math.min((elapsed / PAGE_ROTATE_MS) * 100, 100);
+    barFill.style.width = pct + '%';
+    if (elapsed >= PAGE_ROTATE_MS) elapsed = 0;
+  }, 200);
+
+  state.rotateTimer = setInterval(() => {
+    const next = state.currentTab === 0 ? 1 : 0;
+    switchTab(next);
+    elapsed = 0;
+  }, PAGE_ROTATE_MS);
+}
+
+function switchTab(idx) {
+  state.currentTab = idx;
+  document.querySelectorAll('.page-tab').forEach((t,i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.admin-page').forEach((p,i) => {
+    p.classList.toggle('active', i === idx);
+  });
+  // Reset bar when manually switched
+  const barFill = document.getElementById('autoBarFill');
+  if (barFill) barFill.style.width = '0%';
+}
+
+// ============================================================
+//  CONVERSION % FORMATTER
+// ============================================================
+function formatConvPct(raw) {
+  if (raw === null || raw === undefined || raw === '') return '0.0%';
+  let val = parseFloat(String(raw).replace('%',''));
+  if (isNaN(val)) return '0.0%';
+  // If stored as decimal fraction (e.g., 0.333 instead of 33.3)
+  if (Math.abs(val) < 1 && val !== 0) val = val * 100;
+  return val.toFixed(1) + '%';
+}
+
+function parseConvPctNum(a) {
+  const keys = Object.keys(a);
+  const key  = keys.find(k => k.startsWith('Cycle Conv'));
+  if (!key) return 0;
+  const raw = a[key];
+  if (raw === null || raw === undefined || raw === '') return 0;
+  let val = parseFloat(String(raw).replace('%',''));
+  if (isNaN(val)) return 0;
+  if (Math.abs(val) < 1 && val !== 0) val = val * 100;
+  return val;
+}
+
+function getConvPctDisplay(a) {
+  return formatConvPct(parseConvPctNum(a));
 }
 
 // ============================================================
 //  ADMIN RENDER
 // ============================================================
 function renderAdmin(data) {
-  document.getElementById('adminView').style.display = 'block';
+  document.getElementById('adminView').style.display  = 'block';
   document.getElementById('agentView').style.display  = 'none';
+  document.getElementById('pageTabs').classList.add('show');
 
-  const agents = data.agents || [];
-
-  // KPIs
+  const agents  = data.agents || [];
   const onTrack = agents.filter(a => normalizeStatus(a['Cur Week Status']) === 'ON_TRACK').length;
-  const behind  = agents.filter(a => normalizeStatus(a['Cur Week Status']) === 'BEHIND').length;
-  const convs   = agents.map(a => parseFloat(a['Cycle Conv%\n(Ret: 04/01/2026→05/15/2026\nAssign: 04/01/2026→04/30/2026)'] || 0)).filter(n => !isNaN(n));
-  const avgConv = convs.length ? (convs.reduce((a,b)=>a+b,0)/convs.length).toFixed(1) : '0';
 
-  document.getElementById('kpiTotalDOs').textContent  = data.totalDOs ?? '—';
+  document.getElementById('kpiTotalDOs').textContent     = data.totalDOs ?? '—';
   document.getElementById('kpiActiveAgents').textContent = agents.length;
-  document.getElementById('kpiOnTrack').textContent   = onTrack;
-  document.getElementById('kpiBehind').textContent    = behind;
-  document.getElementById('kpiAvgConv').textContent   = avgConv + '%';
+  document.getElementById('kpiOnTrack').textContent      = onTrack;
 
-  // Charts
   renderCatDOsChart(data.categoryBreakdown || []);
   renderSourceChart(agents);
   renderStatusChart(agents);
-
-  // Category breakdown table
   renderCatBreakdown(data.categoryBreakdown || []);
-
-  // Agents table
   renderAgentTable(agents);
+
+  initPageRotation();
 }
 
 function normalizeStatus(s) {
   if (!s) return '';
   const n = String(s).toUpperCase().replace(/\s+/g,'_');
-  if (n.includes('TRACK')) return 'ON_TRACK';
+  if (n.includes('TRACK'))  return 'ON_TRACK';
   if (n.includes('BEHIND')) return 'BEHIND';
-  if (n.includes('AHEAD')) return 'AHEAD';
+  if (n.includes('AHEAD'))  return 'AHEAD';
   return 'NO_TARGET';
 }
 
@@ -1182,6 +1317,8 @@ function renderCatDOsChart(catData) {
 
   const labels = catData.map(r => r['Category'] || '');
   const vals   = catData.map(r => Number(r['Total DOs'] || 0));
+  const colors = ['rgba(201,162,39,0.75)','rgba(15,196,181,0.75)','rgba(155,127,232,0.75)','rgba(78,203,141,0.75)','rgba(224,90,90,0.75)'];
+  const bords  = ['#C9A227','#0fc4b5','#9b7fe8','#4ecb8d','#e05a5a'];
 
   state.charts.catDOs = new Chart(ctx, {
     type: 'bar',
@@ -1190,14 +1327,22 @@ function renderCatDOsChart(catData) {
       datasets: [{
         label: 'Total DOs',
         data: vals,
-        backgroundColor: ['rgba(201,162,39,0.7)','rgba(15,196,181,0.7)','rgba(155,127,232,0.7)'],
-        borderColor:     ['#C9A227','#0fc4b5','#9b7fe8'],
+        backgroundColor: colors.slice(0, labels.length),
+        borderColor: bords.slice(0, labels.length),
         borderWidth: 2,
         borderRadius: 6,
       }]
     },
-    options: chartOpts('Total DOs by Category')
+    options: chartOpts()
   });
+
+  // Inline numbers below bars
+  const labelsEl = document.getElementById('catDOsLabels');
+  if (labelsEl) {
+    labelsEl.innerHTML = labels.map((l,i) =>
+      `<div class="bar-label-item"><span class="bar-label-val" style="color:${bords[i]||'var(--gold)'}">${vals[i]}</span><span class="bar-label-name">${l}</span></div>`
+    ).join('');
+  }
 }
 
 function renderSourceChart(agents) {
@@ -1210,28 +1355,33 @@ function renderSourceChart(agents) {
     const src = String(a['Source Breakdown'] || '');
     src.split('|').forEach(s => {
       const m = s.trim().match(/^(.+?):\s*(\d+)/);
-      if (m) {
-        const key = m[1].trim();
-        srcMap[key] = (srcMap[key]||0) + parseInt(m[2]);
-      }
+      if (m) { const k = m[1].trim(); srcMap[k] = (srcMap[k]||0) + parseInt(m[2]); }
     });
   });
 
   const labels = Object.keys(srcMap);
   const vals   = Object.values(srcMap);
+  const total  = vals.reduce((a,b)=>a+b,0);
   const colors = labels.map((_,i) => `hsl(${(i*47+30)%360},60%,60%)`);
 
   state.charts.sources = new Chart(ctx, {
     type: 'doughnut',
     data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0 }] },
-    options: {
-      ...chartOpts('Sources'),
-      cutout: '60%',
-      plugins: {
-        legend: { position: 'right', labels: { color: getCSSVar('--text-dim'), font:{size:11,family:'DM Sans'}, boxWidth:12, padding:10 } }
-      }
-    }
+    options: { ...chartOpts(), cutout:'62%', plugins:{ legend:{display:false}, tooltip: doughnutTooltip() } }
   });
+
+  // Legend with values
+  const legend = document.getElementById('sourceLegend');
+  if (legend) {
+    legend.innerHTML = labels.map((l,i) => {
+      const pct = total > 0 ? ((vals[i]/total)*100).toFixed(0) : 0;
+      return `<div class="chart-legend-row">
+        <span class="legend-dot" style="background:${colors[i]}"></span>
+        <span class="legend-label">${l}</span>
+        <span class="legend-val">${vals[i]} <span style="color:var(--text-muted);font-size:.68rem;font-family:var(--font-body)">(${pct}%)</span></span>
+      </div>`;
+    }).join('');
+  }
 }
 
 function renderStatusChart(agents) {
@@ -1239,47 +1389,52 @@ function renderStatusChart(agents) {
   if (!ctx) return;
   if (state.charts.status) state.charts.status.destroy();
 
-  const counts = { 'ON TRACK': 0, BEHIND: 0, AHEAD: 0, 'NO TARGET': 0 };
+  const counts = { 'On Track':0, 'Behind':0, 'Ahead':0, 'No Target':0 };
   agents.forEach(a => {
-    const s = String(a['Cur Week Status'] || 'NO TARGET').trim().toUpperCase();
-    if (s.includes('TRACK')) counts['ON TRACK']++;
-    else if (s.includes('BEHIND')) counts['BEHIND']++;
-    else if (s.includes('AHEAD')) counts['AHEAD']++;
-    else counts['NO TARGET']++;
+    const s = String(a['Cur Week Status']||'').trim().toUpperCase();
+    if (s.includes('TRACK'))  counts['On Track']++;
+    else if (s.includes('BEHIND')) counts['Behind']++;
+    else if (s.includes('AHEAD'))  counts['Ahead']++;
+    else                           counts['No Target']++;
   });
+
+  const labels = Object.keys(counts);
+  const vals   = Object.values(counts);
+  const total  = agents.length || 1;
+  const clrs   = ['rgba(78,203,141,0.85)','rgba(224,90,90,0.85)','rgba(201,162,39,0.85)','rgba(100,100,130,0.5)'];
 
   state.charts.status = new Chart(ctx, {
     type: 'doughnut',
-    data: {
-      labels: Object.keys(counts),
-      datasets: [{ data: Object.values(counts),
-        backgroundColor: ['rgba(78,203,141,0.8)','rgba(224,90,90,0.8)','rgba(201,162,39,0.8)','rgba(100,100,130,0.5)'],
-        borderWidth: 0 }]
-    },
-    options: {
-      ...chartOpts('Status'),
-      cutout: '60%',
-      plugins: {
-        legend: { position: 'right', labels: { color: getCSSVar('--text-dim'), font:{size:11,family:'DM Sans'}, boxWidth:12, padding:10 } }
-      }
-    }
+    data: { labels, datasets: [{ data: vals, backgroundColor: clrs, borderWidth: 0 }] },
+    options: { ...chartOpts(), cutout:'62%', plugins:{ legend:{display:false}, tooltip: doughnutTooltip() } }
   });
+
+  const legend = document.getElementById('statusLegend');
+  if (legend) {
+    legend.innerHTML = labels.map((l,i) => {
+      const pct = ((vals[i]/total)*100).toFixed(0);
+      return `<div class="chart-legend-row">
+        <span class="legend-dot" style="background:${clrs[i]}"></span>
+        <span class="legend-label">${l}</span>
+        <span class="legend-val">${vals[i]} <span style="color:var(--text-muted);font-size:.68rem;font-family:var(--font-body)">(${pct}%)</span></span>
+      </div>`;
+    }).join('');
+  }
 }
 
 function renderCatBreakdown(catData) {
   const wrap = document.getElementById('catBreakdownWrap');
   if (!catData.length) { wrap.innerHTML='<p style="padding:16px;color:var(--text-muted)">No data</p>'; return; }
 
+  // Include one extra row (Y1:AJ5) — catData comes from the backend; we just render all rows
   const keys = Object.keys(catData[0]).filter(k => k !== 'Category');
   let html = '<table><thead><tr><th>Category</th>';
   keys.forEach(k => { html += `<th>${k}</th>`; });
   html += '</tr></thead><tbody>';
-
   catData.forEach(row => {
     html += `<tr><td><span class="cat-tag ${row['Category']}">${row['Category']}</span></td>`;
     keys.forEach(k => {
-      const v = row[k];
-      html += `<td class="${k === 'Total DOs' ? 'total-cell' : ''}">${v ?? ''}</td>`;
+      html += `<td class="${k==='Total DOs'?'total-cell':''}">${row[k]??''}</td>`;
     });
     html += '</tr>';
   });
@@ -1287,10 +1442,11 @@ function renderCatBreakdown(catData) {
   wrap.innerHTML = html;
 }
 
-let filteredAgents = [];
-
+// ============================================================
+//  AGENTS TABLE — compact columns + click to expand
+// ============================================================
 function renderAgentTable(agents) {
-  filteredAgents = agents;
+  state.rawAgents = agents;
   buildTable(agents);
 }
 
@@ -1310,66 +1466,109 @@ function buildTable(agents) {
   if (!agents.length) { wrap.innerHTML='<p style="padding:20px;color:var(--text-muted)">No agents found.</p>'; return; }
 
   let html = `<table><thead><tr>
-    <th>Rank</th><th>Agent</th><th>TL</th><th>Cat</th>
-    <th>Active Leads</th><th>DOs (conv)</th><th>Ext DOs</th>
-    <th>Req (Cycle)</th><th>Achieved</th><th>Missing</th>
-    <th>Wk Req</th><th>Wk Got</th><th>Cumul Gap</th>
-    <th>Wk Status</th><th>Conv %</th><th>Overall</th>
+    <th>#</th><th>Agent</th><th>TL</th><th>Cat</th>
+    <th>DOs (conv)</th><th>Missing</th>
+    <th>Wk Status</th><th>Conv %</th>
   </tr></thead><tbody>`;
 
   agents.forEach((a, i) => {
-    const rank = String(a['Rank']||'').replace('#','');
-    const rn   = parseInt(rank) || 99;
-    const cat  = a['Cat']||'';
+    const rank     = String(a['Rank']||'').replace('#','');
+    const rn       = parseInt(rank) || 99;
+    const cat      = a['Cat']||'';
     const wkStatus = normalizeStatus(a['Cur Week Status']);
-    const convRaw  = parseConvPct(a);
-    const convNum  = parseFloat(convRaw) || 0;
-    const overall  = normalizeStatus(a['Overall Status']);
+    const convNum  = parseConvPctNum(a);
+    const convDisp = formatConvPct(convNum);
+    const missing  = a['Missing\n(Cycle)'] ?? a['Missing (Cycle)'] ?? 0;
 
-    html += `<tr>
+    html += `<tr onclick="openOverlay(${i})" title="Click to see full details">
       <td><span class="rank-badge ${rn===1?'gold':rn===2?'silver':rn===3?'bronze':''}">${rank}</span></td>
       <td style="font-weight:500">${a['Agent']||''}</td>
       <td style="color:var(--text-dim)">${a['TL']||'—'}</td>
       <td><span class="cat-tag ${cat}">${cat}</span></td>
-      <td>${a['Active Leads']||0}</td>
       <td style="font-weight:600;color:var(--gold)">${a['DOs (conv)']||0}</td>
-      <td>${a['Ext DOs']||0}</td>
-      <td>${a['Req DOs\n(Cycle)']||a['Req DOs (Cycle)']||0}</td>
-      <td>${a['Achieved\n(Cycle)']||a['Achieved (Cycle)']||0}</td>
-      <td style="color:var(--red)">${a['Missing\n(Cycle)']||a['Missing (Cycle)']||0}</td>
-      <td>${a['Cur Wk Req']||0}</td>
-      <td>${a['Cur Wk Got']||0}</td>
-      <td style="color:${parseFloat(a['Cumul Gap']||0)<0?'var(--red)':'var(--green)'}">${a['Cumul Gap']||0}</td>
+      <td style="color:var(--red)">${missing}</td>
       <td><span class="status-pill ${wkStatus}">${(a['Cur Week Status']||'—').toUpperCase()}</span></td>
       <td>
         <div class="conv-bar-wrap">
           <div class="conv-bar-bg"><div class="conv-bar-fill" style="width:${Math.min(convNum,100)}%"></div></div>
-          <span class="conv-pct">${convRaw}</span>
+          <span class="conv-pct">${convDisp}</span>
         </div>
       </td>
-      <td><span class="status-pill ${overall}">${(a['Overall Status']||'—').toUpperCase().replace(/ /g,'_')}</span></td>
     </tr>`;
   });
 
   html += '</tbody></table>';
   wrap.innerHTML = html;
+
+  // Store current filtered list for overlay indexing
+  window._currentAgentList = agents;
 }
 
-function parseConvPct(a) {
-  const keys = Object.keys(a);
-  const key  = keys.find(k => k.startsWith('Cycle Conv'));
-  if (!key) return '0%';
-  const v = a[key];
-  if (v === null || v === undefined || v === '') return '0%';
-  return String(v).includes('%') ? String(v) : String(v) + '%';
+// ============================================================
+//  AGENT DETAIL OVERLAY
+// ============================================================
+function openOverlay(idx) {
+  const agents = window._currentAgentList || state.rawAgents;
+  const a      = agents[idx];
+  if (!a) return;
+
+  const cat      = a['Cat']||'';
+  const wkStatus = normalizeStatus(a['Cur Week Status']);
+  const overall  = normalizeStatus(a['Overall Status']);
+  const convDisp = getConvPctDisplay(a);
+  const convNum  = parseConvPctNum(a);
+  const srcBreak = parseSources(String(a['Source Breakdown']||''));
+  const srcHTML  = srcBreak.map(s => `<span class="source-pill"><b>${s.val}</b> ${s.key}</span>`).join('') || '<span style="color:var(--text-muted)">—</span>';
+
+  document.getElementById('overlayContent').innerHTML = `
+    <div class="overlay-agent-name">${a['Agent']||''}</div>
+    <div class="overlay-meta">
+      <span class="cat-tag ${cat}">${cat}</span>
+      <span class="chip">${a['TL']||'No TL'}</span>
+      <span class="status-pill ${wkStatus}">${(a['Cur Week Status']||'—').toUpperCase()}</span>
+      <span class="status-pill ${overall}" style="font-size:.65rem">Overall: ${(a['Overall Status']||'—').toUpperCase()}</span>
+    </div>
+    <div class="overlay-grid">
+      <div class="o-stat"><span class="o-stat-val" style="color:var(--gold)">${a['DOs (conv)']||0}</span><span class="o-stat-lbl">DOs (conv)</span></div>
+      <div class="o-stat"><span class="o-stat-val" style="color:var(--teal)">${a['Active Leads']||0}</span><span class="o-stat-lbl">Active Leads</span></div>
+      <div class="o-stat"><span class="o-stat-val" style="color:var(--purple)">${a['Ext DOs']||0}</span><span class="o-stat-lbl">Ext DOs</span></div>
+      <div class="o-stat"><span class="o-stat-val" style="color:var(--green)">${convDisp}</span><span class="o-stat-lbl">Conv %</span></div>
+      <div class="o-stat"><span class="o-stat-val">${a['Req DOs\n(Cycle)']||a['Req DOs (Cycle)']||0}</span><span class="o-stat-lbl">Req (Cycle)</span></div>
+      <div class="o-stat"><span class="o-stat-val">${a['Achieved\n(Cycle)']||a['Achieved (Cycle)']||0}</span><span class="o-stat-lbl">Achieved</span></div>
+      <div class="o-stat"><span class="o-stat-val" style="color:var(--red)">${a['Missing\n(Cycle)']||a['Missing (Cycle)']||0}</span><span class="o-stat-lbl">Missing</span></div>
+      <div class="o-stat"><span class="o-stat-val">${a['Cur Wk Req']||0}</span><span class="o-stat-lbl">Wk Required</span></div>
+      <div class="o-stat"><span class="o-stat-val" style="color:var(--green)">${a['Cur Wk Got']||0}</span><span class="o-stat-lbl">Wk Got</span></div>
+      <div class="o-stat">
+        <span class="o-stat-val" style="color:${parseFloat(a['Cumul Gap']||0)<0?'var(--red)':'var(--green)'}">${a['Cumul Gap']||0}</span>
+        <span class="o-stat-lbl">Cumul Gap</span>
+      </div>
+    </div>
+    <div class="overlay-src">
+      <div class="overlay-src-title">Source Breakdown</div>
+      <div class="source-pills">${srcHTML}</div>
+    </div>
+  `;
+
+  document.getElementById('agentOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
+
+function closeOverlay(e) {
+  if (e.target === document.getElementById('agentOverlay')) closeOverlayBtn();
+}
+function closeOverlayBtn() {
+  document.getElementById('agentOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlayBtn(); });
 
 // ============================================================
 //  AGENT RENDER
 // ============================================================
 function renderAgent(data) {
-  document.getElementById('adminView').style.display = 'none';
+  document.getElementById('adminView').style.display  = 'none';
   document.getElementById('agentView').style.display  = 'block';
+  document.getElementById('pageTabs').classList.remove('show');
 
   const me = data.myData;
   if (!me) {
@@ -1377,15 +1576,16 @@ function renderAgent(data) {
     return;
   }
 
-  // Personal card
-  const convRaw = parseConvPct(me);
-  const cat = me['Cat']||'';
+  const convDisp = getConvPctDisplay(me);
+  const convNum  = parseConvPctNum(me);
+  const cat      = me['Cat']||'';
   const wkStatus = normalizeStatus(me['Cur Week Status']);
-  const srcBreakdown = parseSources(String(me['Source Breakdown']||''));
+  const srcBreak = parseSources(String(me['Source Breakdown']||''));
+  const srcHTML  = srcBreak.map(s => `<span class="source-pill"><b>${s.val}</b> ${s.key}</span>`).join('') || '<span style="color:var(--text-muted)">No breakdown available</span>';
 
-  const srcHTML = srcBreakdown.map(s =>
-    `<span class="source-pill"><b>${s.val}</b>${s.key}</span>`
-  ).join('');
+  // --- Personal Card: swap DOs (conv) → Achieved (Cycle), Ext DOs → Missing (Cycle), remove Needs More, add Still Missing
+  const achieved   = me['Achieved\n(Cycle)'] ?? me['Achieved (Cycle)'] ?? 0;
+  const missingCyc = me['Missing\n(Cycle)']  ?? me['Missing (Cycle)']  ?? 0;
 
   document.getElementById('personalCard').innerHTML = `
     <div class="personal-name">${me['Agent']}</div>
@@ -1395,52 +1595,49 @@ function renderAgent(data) {
       <span class="status-pill ${wkStatus}">${(me['Cur Week Status']||'—').toUpperCase()}</span>
     </div>
     <div class="personal-stats">
-      <div class="p-stat"><span class="p-stat-val" style="color:var(--gold)">${me['DOs (conv)']||0}</span><span class="p-stat-lbl">DOs (conv)</span></div>
+      <div class="p-stat"><span class="p-stat-val" style="color:var(--gold)">${achieved}</span><span class="p-stat-lbl">Achieved (Cycle)</span></div>
       <div class="p-stat"><span class="p-stat-val" style="color:var(--teal)">${me['Active Leads']||0}</span><span class="p-stat-lbl">Active Leads</span></div>
-      <div class="p-stat"><span class="p-stat-val" style="color:var(--purple)">${me['Ext DOs']||0}</span><span class="p-stat-lbl">Ext DOs</span></div>
-      <div class="p-stat"><span class="p-stat-val" style="color:var(--green)">${convRaw}</span><span class="p-stat-lbl">Conv %</span></div>
-      <div class="p-stat"><span class="p-stat-val" style="color:var(--red)">${me['Missing\n(Cycle)']||me['Missing (Cycle)']||0}</span><span class="p-stat-lbl">Still Missing</span></div>
-      <div class="p-stat"><span class="p-stat-val">${me['Needs More']||'—'}</span><span class="p-stat-lbl">Needs More</span></div>
+      <div class="p-stat"><span class="p-stat-val" style="color:var(--red)">${missingCyc}</span><span class="p-stat-lbl">Missing (Cycle)</span></div>
+      <div class="p-stat"><span class="p-stat-val" style="color:var(--green)">${convDisp}</span><span class="p-stat-lbl">Conv %</span></div>
+      <div class="p-stat"><span class="p-stat-val" style="color:var(--red)">${missingCyc}</span><span class="p-stat-lbl">Still Missing</span></div>
     </div>
     <div style="margin-top:18px">
       <div style="font-size:.75rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Source Breakdown</div>
-      <div class="source-pills">${srcHTML || '<span style="color:var(--text-muted)">No breakdown available</span>'}</div>
+      <div class="source-pills">${srcHTML}</div>
     </div>
   `;
 
-  // KPIs
-  const reqCycle    = parseFloat(me['Req DOs\n(Cycle)']||me['Req DOs (Cycle)']||0);
-  const achCycle    = parseFloat(me['Achieved\n(Cycle)']||me['Achieved (Cycle)']||0);
-  const pct         = reqCycle > 0 ? Math.min((achCycle/reqCycle)*100, 100) : 0;
+  // Agent KPIs
+  const cumGap    = parseFloat(me['Cumul Gap']||0);
+  const reqCycle  = parseFloat(me['Req DOs\n(Cycle)']||me['Req DOs (Cycle)']||0);
+  const achCycle  = parseFloat(achieved);
+  const pct       = reqCycle > 0 ? Math.min((achCycle/reqCycle)*100, 100) : 0;
 
   document.getElementById('agentKpis').innerHTML = `
     <div class="kpi-card"><div class="kpi-label">Rank</div><div class="kpi-val">${me['Rank']||'—'}</div><div class="kpi-sub">This cycle</div></div>
-    <div class="kpi-card teal"><div class="kpi-label">Wk Req</div><div class="kpi-val teal">${me['Cur Wk Req']||0}</div><div class="kpi-sub">This week target</div></div>
+    <div class="kpi-card teal"><div class="kpi-label">Wk Required</div><div class="kpi-val teal">${me['Cur Wk Req']||0}</div><div class="kpi-sub">This week target</div></div>
     <div class="kpi-card green"><div class="kpi-label">Wk Got</div><div class="kpi-val green">${me['Cur Wk Got']||0}</div><div class="kpi-sub">DOs this week</div></div>
-    <div class="kpi-card ${parseFloat(me['Cumul Gap']||0)<0?'red':'purple'}">
+    <div class="kpi-card ${cumGap<0?'red':'purple'}">
       <div class="kpi-label">Cumul Gap</div>
-      <div class="kpi-val ${parseFloat(me['Cumul Gap']||0)<0?'red':'purple'}">${me['Cumul Gap']||0}</div>
+      <div class="kpi-val ${cumGap<0?'red':'purple'}">${me['Cumul Gap']||0}</div>
       <div class="kpi-sub">Cumulative gap</div>
     </div>
   `;
 
   // Progress ring
-  const circ = 2 * Math.PI * 72;
+  const circ   = 2 * Math.PI * 72;
   const offset = circ * (1 - pct / 100);
   setTimeout(() => {
-    const ring = document.getElementById('ringFill');
+    const ring  = document.getElementById('ringFill');
     const label = document.getElementById('ringPct');
-    if (ring) { ring.style.strokeDashoffset = offset; }
-    if (label) { label.textContent = pct.toFixed(0) + '%'; }
-  }, 100);
+    const sub   = document.getElementById('ringSubText');
+    if (ring)  ring.style.strokeDashoffset = offset;
+    if (label) label.textContent = pct.toFixed(0) + '%';
+    if (sub)   sub.textContent   = 'achieved';
+  }, 120);
 
-  // Week chart
   renderAgentWeekChart(me);
-
-  // Source donut
-  renderAgentSourceChart(srcBreakdown);
-
-  // Leaderboard
+  renderAgentSourceChart(srcBreak);
   renderLeaderboard(data.top10 || [], me['Agent']);
 }
 
@@ -1456,21 +1653,32 @@ function renderAgentWeekChart(me) {
   if (!ctx) return;
   if (state.charts.agentWeek) state.charts.agentWeek.destroy();
 
+  const req = parseFloat(me['Cur Wk Req']||0);
+  const got = parseFloat(me['Cur Wk Got']||0);
+
   state.charts.agentWeek = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Wk Required', 'Wk Achieved'],
+      labels: ['Wk Required', 'Wk Got'],
       datasets: [{
         label: 'DOs',
-        data: [parseFloat(me['Cur Wk Req']||0), parseFloat(me['Cur Wk Got']||0)],
-        backgroundColor: ['rgba(201,162,39,0.4)','rgba(78,203,141,0.7)'],
-        borderColor: ['#C9A227','#4ecb8d'],
+        data: [req, got],
+        backgroundColor: ['rgba(201,162,39,0.4)','rgba(78,203,141,0.75)'],
+        borderColor:     ['#C9A227','#4ecb8d'],
         borderWidth: 2,
         borderRadius: 8,
       }]
     },
-    options: chartOpts('Weekly')
+    options: chartOpts()
   });
+
+  const labelsEl = document.getElementById('agentWeekLabels');
+  if (labelsEl) {
+    labelsEl.innerHTML = `
+      <div class="bar-label-item"><span class="bar-label-val" style="color:var(--gold)">${req}</span><span class="bar-label-name">Required</span></div>
+      <div class="bar-label-item"><span class="bar-label-val" style="color:var(--green)">${got}</span><span class="bar-label-name">Got</span></div>
+    `;
+  }
 }
 
 function renderAgentSourceChart(srcData) {
@@ -1480,20 +1688,28 @@ function renderAgentSourceChart(srcData) {
   if (!srcData.length) return;
 
   const colors = srcData.map((_,i) => `hsl(${(i*53+40)%360},58%,58%)`);
+  const total  = srcData.reduce((a,s)=>a+s.val,0);
+
   state.charts.agentSrc = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels: srcData.map(s=>s.key),
       datasets: [{ data: srcData.map(s=>s.val), backgroundColor: colors, borderWidth: 0 }]
     },
-    options: {
-      ...chartOpts('Sources'),
-      cutout: '58%',
-      plugins: {
-        legend: { position: 'right', labels: { color: getCSSVar('--text-dim'), font:{size:11,family:'DM Sans'}, boxWidth:12, padding:8 } }
-      }
-    }
+    options: { ...chartOpts(), cutout:'58%', plugins:{ legend:{display:false}, tooltip: doughnutTooltip() } }
   });
+
+  const legend = document.getElementById('agentSrcLegend');
+  if (legend) {
+    legend.innerHTML = srcData.map((s,i) => {
+      const pct = total>0 ? ((s.val/total)*100).toFixed(0) : 0;
+      return `<div class="chart-legend-row">
+        <span class="legend-dot" style="background:${colors[i]}"></span>
+        <span class="legend-label">${s.key}</span>
+        <span class="legend-val">${s.val} <span style="color:var(--text-muted);font-size:.68rem;font-family:var(--font-body)">(${pct}%)</span></span>
+      </div>`;
+    }).join('');
+  }
 }
 
 function renderLeaderboard(top10, myName) {
@@ -1502,12 +1718,12 @@ function renderLeaderboard(top10, myName) {
 
   const isInTop10 = top10.some(a => String(a.agent||'').toLowerCase() === String(myName||'').toLowerCase());
 
-  list.innerHTML = top10.map((a, i) => {
+  list.innerHTML = top10.map((a,i) => {
     const isMe = String(a.agent||'').toLowerCase() === String(myName||'').toLowerCase();
     const rn   = i+1;
     return `<div class="lb-item ${isMe?'is-me':''}">
       ${isMe?'<span class="lb-me-label">YOU</span>':''}
-      <span class="rank-badge ${rn===1?'gold':rn===2?'silver':rn===3?'bronze':''}">${a.rank||('#'+(i+1))}</span>
+      <span class="rank-badge ${rn===1?'gold':rn===2?'silver':rn===3?'bronze':''}">${a.rank||(('#'+(i+1)))}</span>
       <span class="cat-tag ${a.cat||''}">${a.cat||''}</span>
       <span class="lb-name">${a.agent||''}</span>
       <span class="lb-dos">${a.dOs||0} <span style="font-size:.7rem;color:var(--text-muted);font-family:var(--font-body)">DOs</span></span>
@@ -1525,15 +1741,15 @@ function renderLeaderboard(top10, myName) {
 // ============================================================
 //  CHART HELPERS
 // ============================================================
-function chartOpts(title) {
+function chartOpts() {
   return {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 800, easing: 'easeInOutQuart' },
+    animation: { duration: 700, easing: 'easeInOutQuart' },
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(13,19,34,0.95)',
+        backgroundColor: 'rgba(13,19,34,0.96)',
         borderColor: 'rgba(201,162,39,0.3)',
         borderWidth: 1,
         titleColor: '#C9A227',
@@ -1543,15 +1759,21 @@ function chartOpts(title) {
       }
     },
     scales: {
-      x: {
-        grid: { color: 'rgba(255,255,255,0.04)' },
-        ticks: { color: getCSSVar('--text-muted'), font: { family: 'DM Sans', size: 11 } }
-      },
-      y: {
-        grid: { color: 'rgba(255,255,255,0.04)' },
-        ticks: { color: getCSSVar('--text-muted'), font: { family: 'DM Sans', size: 11 } }
-      }
+      x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:getCSSVar('--text-muted'),font:{family:'DM Sans',size:11}} },
+      y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:getCSSVar('--text-muted'),font:{family:'DM Sans',size:11}} }
     }
+  };
+}
+
+function doughnutTooltip() {
+  return {
+    backgroundColor: 'rgba(13,19,34,0.96)',
+    borderColor: 'rgba(201,162,39,0.3)',
+    borderWidth: 1,
+    titleColor: '#C9A227',
+    bodyColor: '#e8e4d8',
+    padding: 10,
+    cornerRadius: 8,
   };
 }
 
@@ -1562,7 +1784,7 @@ function getCSSVar(name) {
 function reRenderCharts() {
   if (!state.data) return;
   if (state.role === 'admin') renderAdmin(state.data);
-  else renderAgent(state.data);
+  else                        renderAgent(state.data);
 }
 </script>
 </body>
