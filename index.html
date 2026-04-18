@@ -229,7 +229,7 @@ body::before{
 }
 .topbar-logo svg{width:36px;height:36px}
 .topbar-brand{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:.06em}
-.topbar-brand span{color:var(--text-muted);font-size:.68rem;font-weight:400;display:block;letter-spacing:.14em;text-transform:uppercase}
+.topbar-brand span{color:var(--text-muted);font-size:.68rem;font-weight:300;display:block;letter-spacing:.22em;text-transform:uppercase;font-family:var(--font-body)}
 
 .topbar-right{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
 
@@ -852,7 +852,7 @@ tbody tr:last-child td{border-bottom:none}
       </svg>
       <div class="topbar-brand">
         ICO Chasing Portal
-        <span>Liberty Medical</span>
+        <span>Chasing Portal</span>
       </div>
     </div>
     <div class="topbar-right">
@@ -1298,6 +1298,8 @@ function renderAdmin(data) {
 function normalizeStatus(s) {
   if (!s) return '';
   const n = String(s).toUpperCase().replace(/\s+/g,'_');
+  if (n.includes('OFF_TRACK') || n.includes('OFF TRACK')) return 'BEHIND'; // treat OFF TRACK as red
+  if (n.includes('ON_TRACK')  || n.includes('ON TRACK'))  return 'ON_TRACK';
   if (n.includes('TRACK'))  return 'ON_TRACK';
   if (n.includes('BEHIND')) return 'BEHIND';
   if (n.includes('AHEAD'))  return 'AHEAD';
@@ -1493,10 +1495,12 @@ function buildTable(agents) {
 
     // Color the status pill by keyword
     let statusStyle = '';
-    if (rawStatus.includes('TRACK'))       statusStyle = 'background:rgba(78,203,141,0.15);color:var(--green);border-color:rgba(78,203,141,0.4)';
-    else if (rawStatus.includes('BEHIND')) statusStyle = 'background:rgba(224,90,90,0.15);color:var(--red);border-color:rgba(224,90,90,0.4)';
-    else if (rawStatus.includes('WATCH'))  statusStyle = 'background:rgba(201,162,39,0.15);color:var(--gold);border-color:var(--gold-dim)';
-    else if (rawStatus.includes('AHEAD'))  statusStyle = 'background:rgba(201,162,39,0.12);color:var(--gold);border-color:var(--gold-dim)';
+    if (rawStatus.includes('OFF'))             statusStyle = 'background:rgba(224,90,90,0.15);color:var(--red);border-color:rgba(224,90,90,0.4)';
+    else if (rawStatus.includes('ON_TRACK') || rawStatus.includes('ON TRACK') || (rawStatus.includes('TRACK') && !rawStatus.includes('OFF')))
+                                               statusStyle = 'background:rgba(78,203,141,0.15);color:var(--green);border-color:rgba(78,203,141,0.4)';
+    else if (rawStatus.includes('BEHIND'))     statusStyle = 'background:rgba(224,90,90,0.15);color:var(--red);border-color:rgba(224,90,90,0.4)';
+    else if (rawStatus.includes('WATCH'))      statusStyle = 'background:rgba(201,162,39,0.15);color:var(--gold);border-color:var(--gold-dim)';
+    else if (rawStatus.includes('AHEAD'))      statusStyle = 'background:rgba(201,162,39,0.12);color:var(--gold);border-color:var(--gold-dim)';
 
     html += `<tr onclick="openOverlay(${i})" title="Click to see full details">
       <td><span class="rank-badge ${rn===1?'gold':rn===2?'silver':rn===3?'bronze':''}">${rank}</span></td>
