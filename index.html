@@ -157,13 +157,9 @@ body::before{
   letter-spacing:.08em;
   text-align:center;
   color:var(--gold);
-  margin-bottom:4px;
-}
-.login-sub{
-  text-align:center;font-size:.82rem;
-  color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;
   margin-bottom:36px;
 }
+.login-sub{display:none}
 
 .field{margin-bottom:18px}
 .field label{
@@ -692,9 +688,9 @@ tbody tr:last-child td{border-bottom:none}
   display:flex;flex-direction:column;align-items:center;gap:8px;
 }
 .progress-ring{transform:rotate(-90deg)}
-.ring-bg{fill:none;stroke:var(--bg-card2);stroke-width:8}
+.ring-bg{fill:none;stroke:var(--bg-card2);stroke-width:14}
 .ring-fill{
-  fill:none;stroke-width:8;stroke-linecap:round;
+  fill:none;stroke-width:14;stroke-linecap:round;
   transition:stroke-dashoffset .8s ease;
 }
 .ring-center-label{
@@ -827,8 +823,7 @@ tbody tr:last-child td{border-bottom:none}
         <circle cx="70" cy="67" r="1" fill="#0fc4b5" opacity=".7"/>
       </svg>
     </div>
-    <div class="login-title">ICO<span style="display:block;font-size:1.1rem;letter-spacing:.18em;margin-top:2px">Chasing Portal</span></div>
-    <div class="login-sub"></div>
+    <div class="login-title">ICO<span style="display:block;font-size:1.05rem;letter-spacing:.22em;margin-top:1px;color:var(--gold-light)">Chasing Portal</span></div>
 
     <div class="field">
       <label>Username</label>
@@ -1421,15 +1416,14 @@ function renderCatBreakdown(catData) {
   const wrap = document.getElementById('catBreakdownWrap');
   if (!catData.length) { wrap.innerHTML='<p style="padding:16px;color:var(--text-muted)">No data</p>'; return; }
 
-  // Include one extra row (Y1:AJ5) — catData comes from the backend; we just render all rows
   const keys = Object.keys(catData[0]).filter(k => k !== 'Category');
   let html = '<table><thead><tr><th>Category</th>';
   keys.forEach(k => { html += `<th>${k}</th>`; });
   html += '</tr></thead><tbody>';
 
-  // Separate category rows from the Total row
-  const catRows   = catData.filter(r => String(r['Category']||'').toUpperCase() !== 'TOTAL');
-  const totalRow  = catData.find(r => String(r['Category']||'').toUpperCase() === 'TOTAL');
+  // Separate category rows from any explicit Total row
+  const catRows  = catData.filter(r => String(r['Category']||'').toUpperCase() !== 'TOTAL');
+  const totalRow = catData.find(r  => String(r['Category']||'').toUpperCase() === 'TOTAL');
 
   catRows.forEach(row => {
     html += `<tr><td><span class="cat-tag ${row['Category']}">${row['Category']}</span></td>`;
@@ -1439,15 +1433,20 @@ function renderCatBreakdown(catData) {
     html += '</tr>';
   });
 
-  // Total row — always last, styled distinctly
-  if (totalRow) {
-    html += `<tr style="border-top:1px solid var(--border);background:rgba(201,162,39,0.04)">
-      <td style="font-family:var(--font-display);font-size:.75rem;font-weight:700;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase">Total</td>`;
-    keys.forEach(k => {
-      html += `<td class="total-cell">${totalRow[k]??''}</td>`;
-    });
-    html += '</tr>';
-  }
+  // Auto-compute column sums if no Total row provided by backend
+  const sums = {};
+  keys.forEach(k => {
+    sums[k] = catRows.reduce((acc, row) => acc + (parseFloat(row[k]) || 0), 0);
+  });
+  const sumSource = totalRow || sums;
+  const getVal = (k) => totalRow ? (totalRow[k] ?? '') : Math.round(sums[k]) || '';
+
+  html += `<tr style="border-top:2px solid var(--border);background:rgba(201,162,39,0.05)">
+    <td style="font-family:var(--font-display);font-size:.72rem;font-weight:700;letter-spacing:.14em;color:var(--gold);text-transform:uppercase">Total</td>`;
+  keys.forEach(k => {
+    html += `<td class="total-cell">${getVal(k)}</td>`;
+  });
+  html += '</tr>';
 
   html += '</tbody></table>';
   wrap.innerHTML = html;
@@ -1486,10 +1485,18 @@ function buildTable(agents) {
     const rank     = String(a['Rank']||'').replace('#','');
     const rn       = parseInt(rank) || 99;
     const cat      = a['Cat']||'';
+    const rawStatus = String(a['Cur Week Status']||'').toUpperCase();
     const wkStatus = normalizeStatus(a['Cur Week Status']);
     const convNum  = parseConvPctNum(a);
     const convDisp = formatConvPct(convNum);
     const missing  = a['Missing\n(Cycle)'] ?? a['Missing (Cycle)'] ?? 0;
+
+    // Color the status pill by keyword
+    let statusStyle = '';
+    if (rawStatus.includes('TRACK'))       statusStyle = 'background:rgba(78,203,141,0.15);color:var(--green);border-color:rgba(78,203,141,0.4)';
+    else if (rawStatus.includes('BEHIND')) statusStyle = 'background:rgba(224,90,90,0.15);color:var(--red);border-color:rgba(224,90,90,0.4)';
+    else if (rawStatus.includes('WATCH'))  statusStyle = 'background:rgba(201,162,39,0.15);color:var(--gold);border-color:var(--gold-dim)';
+    else if (rawStatus.includes('AHEAD'))  statusStyle = 'background:rgba(201,162,39,0.12);color:var(--gold);border-color:var(--gold-dim)';
 
     html += `<tr onclick="openOverlay(${i})" title="Click to see full details">
       <td><span class="rank-badge ${rn===1?'gold':rn===2?'silver':rn===3?'bronze':''}">${rank}</span></td>
@@ -1498,7 +1505,7 @@ function buildTable(agents) {
       <td><span class="cat-tag ${cat}">${cat}</span></td>
       <td style="font-weight:600;color:var(--gold)">${a['DOs (conv)']||0}</td>
       <td style="color:var(--red)">${missing}</td>
-      <td><span class="status-pill ${wkStatus}">${(a['Cur Week Status']||'—').toUpperCase()}</span></td>
+      <td><span class="status-pill ${wkStatus}" style="${statusStyle}">${(a['Cur Week Status']||'—').toUpperCase()}</span></td>
       <td>
         <div class="conv-bar-wrap">
           <div class="conv-bar-bg"><div class="conv-bar-fill" style="width:${Math.min(convNum,100)}%"></div></div>
