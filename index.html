@@ -1629,6 +1629,32 @@ function renderAgent(data) {
     </div>
   `;
 
+  // --- Compute rank by Conv% (descending) from agents list or top10
+  const myConv = parseConvPctNum(me);
+  let computedRank = '—';
+
+  // Use full agents list if available (admin sends it; agent API may send it too)
+  const allAgents = data.agents || [];
+  if (allAgents.length > 1) {
+    const sorted = [...allAgents]
+      .map(a => parseConvPctNum(a))
+      .sort((a, b) => b - a);
+    const rank = sorted.indexOf(myConv) + 1;
+    computedRank = rank > 0 ? '#' + rank : '#' + (sorted.findIndex(v => v <= myConv) + 1);
+  } else if ((data.top10 || []).length) {
+    // Fallback: use top10 list
+    const top10 = data.top10 || [];
+    const convVals = top10.map(a => {
+      // top10 items may have a convPct field or we approximate from dOs
+      if (a.convPct !== undefined) return parseFloat(a.convPct) < 1 ? parseFloat(a.convPct)*100 : parseFloat(a.convPct);
+      return 0;
+    }).sort((a,b) => b - a);
+    const myEntry = top10.find(a => String(a.agent||'').toLowerCase() === String(me['Agent']||'').toLowerCase());
+    computedRank = myEntry ? (top10.indexOf(myEntry)+1 <= 10 ? '#'+(top10.indexOf(myEntry)+1) : me['Rank']||'—') : (me['Rank']||'—');
+  } else {
+    computedRank = me['Rank'] || '—';
+  }
+
   // Agent KPIs
   const cumGap    = parseFloat(me['Cumul Gap']||0);
   const reqCycle  = parseFloat(me['Req DOs\n(Cycle)']||me['Req DOs (Cycle)']||0);
@@ -1636,7 +1662,7 @@ function renderAgent(data) {
   const pct       = reqCycle > 0 ? Math.min((achCycle/reqCycle)*100, 100) : 0;
 
   document.getElementById('agentKpis').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label">Rank</div><div class="kpi-val">${me['Rank']||'—'}</div><div class="kpi-sub">This cycle</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rank</div><div class="kpi-val">${computedRank}</div><div class="kpi-sub">By Conv % · This cycle</div></div>
     <div class="kpi-card teal"><div class="kpi-label">Wk Required</div><div class="kpi-val teal">${me['Cur Wk Req']||0}</div><div class="kpi-sub">This week target</div></div>
     <div class="kpi-card green"><div class="kpi-label">Wk Got</div><div class="kpi-val green">${me['Cur Wk Got']||0}</div><div class="kpi-sub">DOs this week</div></div>
     <div class="kpi-card ${cumGap<0?'red':'purple'}">
