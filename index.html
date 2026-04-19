@@ -1011,7 +1011,7 @@ tbody tr:last-child td{border-bottom:none}
 // ============================================================
 //  CONFIG
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxwFD75YNK-mIf94_xSr1ejjto0cbkvpLDBaU9U7c2JOve7Qrg5wEBujfHOmfD6lfeb/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbw1pBQd9qt6vp-i9U5hIOwb62AG9rRp4D8Edck9TbK3n18ozRlaJKeSJ8oXvrA_Zswi/exec";
 const SYNC_INTERVAL   = 60000; // 1 minute
 const PAGE_ROTATE_MS  = 50000; // 50 seconds per page
 const BROADCAST_DELAY = 10000;
@@ -1671,7 +1671,7 @@ function renderAgent(data) {
 
   renderAgentWeekChart(me);
   renderAgentSourceChart(srcBreak);
-  renderLeaderboard(data.top10 || [], me['Agent']);
+  renderLeaderboard(data.top10 || [], me['Agent'], data.convRanks || []);
 }
 
 function parseSources(src) {
@@ -1745,18 +1745,25 @@ function renderAgentSourceChart(srcData) {
   }
 }
 
-function renderLeaderboard(top10, myName) {
+function renderLeaderboard(top10, myName, convRanks) {
   const list = document.getElementById('leaderboardList');
   if (!top10.length) { list.innerHTML='<p style="color:var(--text-muted)">No leaderboard data.</p>'; return; }
 
+  // Build a rank lookup from convRanks so displayed rank always matches Conv%-based rank
+  const rankLookup = {};
+  (convRanks || []).forEach((r, i) => {
+    rankLookup[String(r.agent||'').toLowerCase()] = i + 1;
+  });
+
   const isInTop10 = top10.some(a => String(a.agent||'').toLowerCase() === String(myName||'').toLowerCase());
 
-  list.innerHTML = top10.map((a,i) => {
-    const isMe = String(a.agent||'').toLowerCase() === String(myName||'').toLowerCase();
-    const rn   = i+1;
+  list.innerHTML = top10.map((a) => {
+    const isMe   = String(a.agent||'').toLowerCase() === String(myName||'').toLowerCase();
+    // Use convRanks-based rank if available, else fall back to top10 index
+    const rn     = rankLookup[String(a.agent||'').toLowerCase()] || (top10.indexOf(a) + 1);
     return `<div class="lb-item ${isMe?'is-me':''}">
       ${isMe?'<span class="lb-me-label">YOU</span>':''}
-      <span class="rank-badge ${rn===1?'gold':rn===2?'silver':rn===3?'bronze':''}">${a.rank||(('#'+(i+1)))}</span>
+      <span class="rank-badge ${rn===1?'gold':rn===2?'silver':rn===3?'bronze':''}">#${rn}</span>
       <span class="cat-tag ${a.cat||''}">${a.cat||''}</span>
       <span class="lb-name">${a.agent||''}</span>
       <span class="lb-dos">${a.dOs||0} <span style="font-size:.7rem;color:var(--text-muted);font-family:var(--font-body)">DOs</span></span>
