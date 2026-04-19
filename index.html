@@ -1011,7 +1011,7 @@ tbody tr:last-child td{border-bottom:none}
 // ============================================================
 //  CONFIG
 // ============================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbzQp3hRCN4Jh5qmHEXGX1ZoSu0Rgd-WQbUfMAgQUz8IHGyfhSh7u74WYz8FZ4VOV748/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxwFD75YNK-mIf94_xSr1ejjto0cbkvpLDBaU9U7c2JOve7Qrg5wEBujfHOmfD6lfeb/exec";
 const SYNC_INTERVAL   = 60000; // 1 minute
 const PAGE_ROTATE_MS  = 50000; // 50 seconds per page
 const BROADCAST_DELAY = 10000;
@@ -1629,30 +1629,17 @@ function renderAgent(data) {
     </div>
   `;
 
-  // --- Compute rank by Conv% (descending) from agents list or top10
+  // --- Compute rank by Conv% using convRanks list from API
   const myConv = parseConvPctNum(me);
-  let computedRank = '—';
+  let computedRank = me['Rank'] || '—';
 
-  // Use full agents list if available (admin sends it; agent API may send it too)
-  const allAgents = data.agents || [];
-  if (allAgents.length > 1) {
-    const sorted = [...allAgents]
-      .map(a => parseConvPctNum(a))
-      .sort((a, b) => b - a);
-    const rank = sorted.indexOf(myConv) + 1;
-    computedRank = rank > 0 ? '#' + rank : '#' + (sorted.findIndex(v => v <= myConv) + 1);
-  } else if ((data.top10 || []).length) {
-    // Fallback: use top10 list
-    const top10 = data.top10 || [];
-    const convVals = top10.map(a => {
-      // top10 items may have a convPct field or we approximate from dOs
-      if (a.convPct !== undefined) return parseFloat(a.convPct) < 1 ? parseFloat(a.convPct)*100 : parseFloat(a.convPct);
-      return 0;
-    }).sort((a,b) => b - a);
-    const myEntry = top10.find(a => String(a.agent||'').toLowerCase() === String(me['Agent']||'').toLowerCase());
-    computedRank = myEntry ? (top10.indexOf(myEntry)+1 <= 10 ? '#'+(top10.indexOf(myEntry)+1) : me['Rank']||'—') : (me['Rank']||'—');
-  } else {
-    computedRank = me['Rank'] || '—';
+  const convRanks = data.convRanks || [];
+  if (convRanks.length > 0) {
+    // convRanks is pre-sorted descending by convPct from the script
+    const idx = convRanks.findIndex(r =>
+      String(r.agent||'').toLowerCase() === String(me['Agent']||'').toLowerCase()
+    );
+    computedRank = idx >= 0 ? '#' + (idx + 1) : (me['Rank'] || '—');
   }
 
   // Agent KPIs
